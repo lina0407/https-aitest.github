@@ -1,0 +1,3273 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<!-- 单文件版（由 tools/build-single.js 生成）：CSS/JS 已全部内联，可独立部署 -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="format-detection" content="telephone=no">
+<meta name="theme-color" content="#0B1F3A">
+<title>企业AI落地成熟度测评</title>
+<meta name="description" content="3分钟，从AI应用基础、业务场景应用、流程重构与协同、组织与经营结果4大维度，诊断你的企业AI落地成熟度，给出当前阶段判断与下一阶段行动建议。">
+<meta property="og:title" content="企业AI落地成熟度测评">
+<meta property="og:description" content="员工会用AI，不等于企业完成了AI转型。3分钟完成诊断。">
+<meta property="og:type" content="website">
+<style>
+/* ================================================================
+   企业AI落地成熟度测评 —— 视觉样式
+   风格：企业咨询 / 诊断报告感。深蓝 + 白 + 浅灰，少量亮蓝强调。
+   移动端优先，桌面端居中显示。
+   ================================================================ */
+
+:root {
+  --navy: #0B1F3A;
+  --navy-2: #12294A;
+  --blue: #1D6FF2;
+  --blue-soft: #EDF3FE;
+  --blue-line: #CFE0FD;
+  --bg: #F4F6FA;
+  --bg-deep: #EBEFF6;
+  --card: #FFFFFF;
+  --text: #0F1B2D;
+  --text-2: #5A6A80;
+  --text-3: #93A0B2;
+  --line: #E4E9F0;
+  --line-soft: #EEF1F6;
+  --amber: #B7791F;
+  --amber-bg: #FFFBF3;
+  --amber-line: #F2E2C4;
+  --radius: 14px;
+  --radius-lg: 18px;
+  --shadow-card: 0 1px 2px rgba(15, 27, 45, .04), 0 6px 20px rgba(15, 27, 45, .05);
+  --shadow-btn: 0 4px 14px rgba(11, 31, 58, .18);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --font: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", -apple-system,
+          BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-deep);
+  font-family: var(--font);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body { overflow-x: hidden; }
+
+#app {
+  max-width: 520px;
+  margin: 0 auto;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (min-width: 560px) {
+  #app {
+    box-shadow: 0 0 0 1px rgba(15, 27, 45, .05), 0 20px 60px rgba(15, 27, 45, .08);
+  }
+}
+
+/* ---------------- 顶部进度条 ---------------- */
+#topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: rgba(244, 246, 250, .92);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--line-soft);
+  display: none;
+  padding-top: env(safe-area-inset-top, 0px);
+}
+#topbar.show { display: block; }
+
+.topbar-in {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 18px 8px;
+}
+/* 44×44：符合手机端最小触摸区域标准 */
+.tb-back {
+  width: 44px; height: 44px;
+  flex: 0 0 auto;
+  border-radius: 11px;
+  border: 1px solid var(--line);
+  background: #fff;
+  display: grid; place-items: center;
+  cursor: pointer;
+  padding: 0;
+  transition: background .15s;
+}
+.tb-back:active { background: var(--line-soft); }
+.tb-back svg { width: 17px; height: 17px; }
+.tb-back[disabled] { opacity: .35; pointer-events: none; }
+
+.tb-label {
+  font-size: 14px;
+  color: var(--text-2);
+  font-weight: 600;
+  letter-spacing: .2px;
+  flex: 1;
+}
+.tb-count {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--navy);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .3px;
+}
+.tb-count em { color: var(--text-3); font-weight: 600; font-style: normal; }
+
+.tb-bar {
+  height: 3px;
+  background: var(--line-soft);
+  overflow: hidden;
+}
+.tb-bar > i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--blue);
+  border-radius: 0 2px 2px 0;
+  transition: width .32s cubic-bezier(.4, 0, .2, 1);
+}
+
+/* ---------------- 通用容器 ---------------- */
+#screen { flex: 1; display: flex; flex-direction: column; }
+
+.wrap { padding: 0 20px; }
+
+.screen-body {
+  flex: 1;
+  padding: 26px 20px calc(120px + var(--safe-b));
+}
+
+/* 底部固定操作区 */
+.dock {
+  position: fixed;
+  bottom: 0;
+  left: 0; right: 0;
+  z-index: 25;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 14px 20px calc(14px + var(--safe-b));
+  background: linear-gradient(to top, var(--bg) 62%, rgba(244, 246, 250, 0));
+  pointer-events: none;
+}
+.dock > * { pointer-events: auto; }
+@media (min-width: 560px) { .dock { border-left: 1px solid transparent; } }
+
+/* ---------------- 按钮 ---------------- */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 20px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font-family: var(--font);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: .3px;
+  cursor: pointer;
+  transition: transform .12s ease, background .18s, box-shadow .18s, opacity .18s;
+  text-decoration: none;
+  -webkit-user-select: none; user-select: none;
+}
+.btn:active { transform: scale(.985); }
+
+.btn-primary {
+  background: var(--navy);
+  color: #fff;
+  box-shadow: var(--shadow-btn);
+}
+.btn-primary:active { background: var(--navy-2); }
+.btn-primary[disabled] {
+  background: #C7D0DC;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.btn-blue { background: var(--blue); color: #fff; }
+.btn-outline {
+  background: #fff;
+  color: var(--navy);
+  border-color: var(--line);
+}
+.btn-outline:active { background: var(--line-soft); }
+.btn-ghost {
+  background: transparent;
+  color: var(--text-2);
+  border-color: var(--line);
+  font-weight: 500;
+}
+.btn-sm { min-height: 46px; font-size: 15.5px; }
+
+/* ---------------- 首页 ---------------- */
+.hero {
+  background: var(--navy);
+  color: #fff;
+  padding: calc(46px + env(safe-area-inset-top, 0px)) 24px 40px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::after {
+  content: "";
+  position: absolute;
+  right: -80px; top: -60px;
+  width: 260px; height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(29,111,242,.20) 0%, rgba(29,111,242,0) 68%);
+}
+.hero-kicker {
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 2.4px;
+  color: #6C86A8;
+  text-transform: uppercase;
+  margin: 0 0 16px;
+  position: relative;
+}
+.hero h1 {
+  font-size: 30px;
+  line-height: 1.32;
+  font-weight: 700;
+  letter-spacing: -.4px;
+  margin: 0 0 14px;
+  position: relative;
+}
+.hero-sub {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #A9BCD4;
+  margin: 0 0 30px;
+  position: relative;
+}
+.hero-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  position: relative;
+}
+.hero-tags span {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 7px 13px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .09);
+  border: 1px solid rgba(255, 255, 255, .13);
+  color: #D3E0F0;
+  letter-spacing: .2px;
+}
+
+.sec { margin-bottom: 26px; }
+.sec-title {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -.2px;
+  margin: 0 0 14px;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.sec-title::before {
+  content: "";
+  width: 3px; height: 15px;
+  border-radius: 2px;
+  background: var(--blue);
+  flex: 0 0 auto;
+}
+.sec-title.plain::before { display: none; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+}
+.card + .card { margin-top: 12px; }
+
+.prose {
+  font-size: 15px;
+  line-height: 1.82;
+  color: var(--text-2);
+  margin: 0 0 14px;
+}
+.prose:last-child { margin-bottom: 0; }
+.prose strong { color: var(--text); font-weight: 600; }
+
+/* 流程链：手机上强制单行，靠 flex 收缩适配，不允许折行 */
+.chain {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin: 18px 0 4px;
+}
+.chain-item {
+  flex: 1 1 0;
+  min-width: 0;
+  background: var(--blue-soft);
+  border: 1px solid var(--blue-line);
+  border-radius: 9px;
+  padding: 11px 2px;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #1A56C4;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.chain-arrow {
+  flex: 0 0 14px;
+  width: 14px;
+  display: grid;
+  place-items: center;
+  color: #B7C6DA;
+  font-size: 9px;
+}
+
+.list-check { list-style: none; padding: 0; margin: 0; }
+.list-check li {
+  position: relative;
+  padding-left: 24px;
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--text-2);
+  margin-bottom: 10px;
+}
+.list-check li:last-child { margin-bottom: 0; }
+.list-check li::before {
+  content: "";
+  position: absolute;
+  left: 4px; top: 9px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--blue);
+}
+
+/* ---------------- 基础信息 ---------------- */
+.field { margin-bottom: 30px; }
+.field:last-of-type { margin-bottom: 10px; }
+.field-label {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -.2px;
+  margin: 0 0 14px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.field-label span {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-3);
+}
+
+.pills { display: flex; flex-wrap: wrap; gap: 10px; }
+.pill {
+  min-height: 44px;
+  padding: 0 16px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: var(--font);
+  color: var(--text);
+  cursor: pointer;
+  transition: all .16s;
+}
+.pill:active { transform: scale(.97); }
+.pill.sel {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  color: #14479E;
+  font-weight: 600;
+  box-shadow: 0 0 0 3px rgba(29, 111, 242, .1);
+}
+
+/* ---------------- 答题 ---------------- */
+.q-index {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--blue);
+  margin: 0 0 14px;
+}
+.q-title {
+  font-size: 21px;
+  line-height: 1.5;
+  font-weight: 700;
+  letter-spacing: -.3px;
+  margin: 0 0 28px;
+  color: var(--text);
+}
+
+.opts { display: flex; flex-direction: column; gap: 11px; }
+.opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  width: 100%;
+  min-height: 62px;
+  padding: 17px 16px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font);
+  transition: border-color .16s, background .16s, box-shadow .16s, transform .12s;
+}
+.opt:active { transform: scale(.988); }
+.opt-k {
+  flex: 0 0 auto;
+  width: 24px; height: 24px;
+  border-radius: 7px;
+  background: var(--bg);
+  color: var(--text-3);
+  font-size: 12.5px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  margin-top: 1px;
+  transition: all .16s;
+}
+.opt-t {
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--text);
+}
+.opt.sel {
+  border-color: var(--blue);
+  background: var(--blue-soft);
+  box-shadow: 0 0 0 3px rgba(29, 111, 242, .1);
+}
+.opt.sel .opt-k { background: var(--blue); color: #fff; }
+.opt.sel .opt-t { font-weight: 600; color: #123F8C; }
+
+.q-hint {
+  margin-top: 22px;
+  font-size: 13px;
+  color: var(--text-3);
+  line-height: 1.7;
+}
+.q-hint.warn { color: #C2701A; }
+
+/* ---------------- 过渡动画 ---------------- */
+#loading {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: var(--bg);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  max-width: 520px;
+  margin: 0 auto;
+}
+#loading.show { display: flex; }
+.spinner {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  border: 2.5px solid var(--line);
+  border-top-color: var(--blue);
+  animation: spin .75s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-t { font-size: 15.5px; color: var(--text-2); font-weight: 500; }
+.loading-dots::after {
+  content: "";
+  animation: dots 1.2s steps(4, end) infinite;
+}
+@keyframes dots {
+  0% { content: ""; } 25% { content: "."; }
+  50% { content: ".."; } 75% { content: "..."; }
+}
+
+/* ---------------- 结果页 ---------------- */
+.score-hero {
+  background: var(--navy);
+  color: #fff;
+  padding: calc(36px + env(safe-area-inset-top, 0px)) 24px 34px;
+  position: relative;
+  overflow: hidden;
+}
+.score-hero::after {
+  content: "";
+  position: absolute;
+  left: 50%; top: -140px;
+  width: 420px; height: 300px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, rgba(29,111,242,.30) 0%, rgba(29,111,242,0) 70%);
+  pointer-events: none;
+}
+.sh-label {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1.6px;
+  color: #6C86A8;
+  margin: 0 0 18px;
+  position: relative;
+}
+.sh-score {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  position: relative;
+  margin-bottom: 22px;
+}
+.sh-num {
+  font-size: 76px;
+  line-height: .86;
+  font-weight: 700;
+  letter-spacing: -3px;
+  font-variant-numeric: tabular-nums;
+}
+.sh-max {
+  font-size: 16px;
+  font-weight: 600;
+  color: #5E7699;
+  padding-bottom: 8px;
+  letter-spacing: .5px;
+}
+.sh-level {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 16px;
+  border: 1px solid rgba(255, 255, 255, .28);
+  border-radius: 100px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #DCE7F5;
+  position: relative;
+  margin-bottom: 18px;
+}
+.sh-level b { font-size: 15px; letter-spacing: .6px; }
+.sh-level s { text-decoration: none; opacity: .34; }
+.sh-oneliner {
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: #A9BCD4;
+  margin: 0;
+  position: relative;
+}
+.sh-benchmark {
+  position: relative;
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, .12);
+  font-size: 14px;
+  color: #A9BCD4;
+}
+.sh-benchmark b { color: #fff; font-size: 16px; }
+
+/* 维度条 */
+.dim-row { margin-bottom: 22px; }
+.dim-row:last-child { margin-bottom: 0; }
+.dim-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 9px;
+}
+.dim-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.dim-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 5px;
+  letter-spacing: .2px;
+}
+.dim-tag.best { background: var(--blue-soft); color: #1A56C4; }
+.dim-tag.weak { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-line); }
+.dim-val {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--blue);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.dim-val em { font-style: normal; color: var(--text-3); font-weight: 500; font-size: 12.5px; }
+.dim-track {
+  height: 8px;
+  background: var(--line-soft);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.dim-fill {
+  display: block;           /* 关键：<i> 是行内元素，必须转块级，否则宽高不生效 */
+  height: 100%;
+  width: 0;
+  border-radius: 4px;
+  background: var(--blue);
+  transition: width .7s cubic-bezier(.4, 0, .2, 1);
+}
+.dim-desc {
+  margin-top: 8px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--text-3);
+}
+
+.callout {
+  background: var(--blue-soft);
+  border: 1px solid var(--blue-line);
+  border-radius: var(--radius);
+  padding: 17px 18px;
+  font-size: 14.5px;
+  line-height: 1.78;
+  color: #173F82;
+}
+.callout b { font-weight: 700; }
+
+.callout-amber {
+  background: var(--amber-bg);
+  border-color: var(--amber-line);
+  color: #6B5320;
+}
+.callout-amber b { color: #8A5A0F; }
+
+/* 诊断区块 */
+.diag-headline {
+  font-size: 19px;
+  line-height: 1.5;
+  font-weight: 700;
+  letter-spacing: -.3px;
+  margin: 0 0 16px;
+}
+.diag-p {
+  font-size: 14.5px;
+  line-height: 1.82;
+  color: var(--text-2);
+  margin: 0 0 12px;
+}
+.diag-p:last-child { margin-bottom: 0; }
+.diag-p.lead { color: var(--text); font-weight: 600; }
+.diag-p strong { color: var(--text); font-weight: 600; }
+
+/* 路径 */
+.path { list-style: none; padding: 0; margin: 0; counter-reset: p; }
+.path li {
+  position: relative;
+  padding: 0 0 20px 38px;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text);
+  counter-increment: p;
+}
+.path li:last-child { padding-bottom: 0; }
+.path li::before {
+  content: counter(p);
+  position: absolute;
+  left: 0; top: 0;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--blue-soft);
+  border: 1px solid var(--blue-line);
+  color: #1A56C4;
+  font-size: 12px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+.path li::after {
+  content: "";
+  position: absolute;
+  left: 11.5px;
+  top: 28px;
+  bottom: 4px;
+  width: 1px;
+  background: var(--blue-line);
+}
+.path li:last-child::after { display: none; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 8px 13px;
+  border-radius: 8px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  color: var(--text-2);
+}
+
+/* 需求建议 */
+.need-item {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.need-item:last-child { border-bottom: none; padding-bottom: 0; }
+.need-item:first-child { padding-top: 0; }
+.need-title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.need-title::before {
+  content: "";
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--blue);
+}
+.need-text {
+  font-size: 13.5px;
+  line-height: 1.76;
+  color: var(--text-2);
+  padding-left: 13px;
+}
+
+/* 引导模块（游学） */
+.guide {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+}
+.guide-top {
+  background: var(--navy);
+  color: #fff;
+  padding: 24px 22px 22px;
+}
+.guide-tag {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  color: #8FA8C6;
+  border: 1px solid rgba(255, 255, 255, .18);
+  padding: 5px 10px;
+  border-radius: 6px;
+  margin-bottom: 14px;
+}
+.guide-title {
+  font-size: 18px;
+  line-height: 1.5;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -.2px;
+}
+.guide-body { padding: 20px 22px 22px; }
+.guide-body p {
+  font-size: 14.5px;
+  line-height: 1.8;
+  color: var(--text-2);
+  margin: 0 0 12px;
+}
+.guide-body p:last-of-type { margin-bottom: 0; }
+.guide-bullets {
+  list-style: none;
+  padding: 16px 0 0;
+  margin: 16px 0 0;
+  border-top: 1px solid var(--line-soft);
+}
+.guide-bullets li {
+  position: relative;
+  padding-left: 22px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text);
+  margin-bottom: 9px;
+}
+.guide-bullets li:last-child { margin-bottom: 0; }
+.guide-bullets li::before {
+  content: "";
+  position: absolute;
+  left: 2px; top: 7px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--blue);
+}
+.guide-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 22px 22px;
+}
+
+/* 结果页底部操作 */
+.result-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 26px;
+}
+.fine-print {
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--text-3);
+  text-align: center;
+  margin: 22px 0 0;
+}
+
+/* 长图弹层 */
+#sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: none;
+}
+#sheet.show { display: block; }
+.sheet-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 20, 35, .72);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+.sheet-panel {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  max-width: 520px;
+  margin: 0 auto;
+  max-height: 88vh;
+  background: var(--bg);
+  border-radius: 20px 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  animation: up .28s cubic-bezier(.3, 1, .4, 1);
+}
+@keyframes up { from { transform: translateY(24px); opacity: .4; } }
+.sheet-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--line-soft);
+  flex: 0 0 auto;
+}
+.sheet-title { font-size: 16px; font-weight: 700; }
+.sheet-close {
+  border: none; background: none; padding: 4px 2px;
+  font-size: 15px; color: var(--text-3); cursor: pointer;
+  font-family: var(--font);
+}
+.sheet-scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 18px 20px calc(24px + var(--safe-b));
+}
+.sheet-scroll img {
+  width: 100%;
+  display: block;
+  border-radius: 10px;
+  box-shadow: 0 8px 30px rgba(15, 27, 45, .18);
+}
+.sheet-tip {
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-3);
+  margin: 14px 0 16px;
+  line-height: 1.6;
+}
+/* ---------------- 添加微信（引导弹层） ---------------- */
+.qr-box {
+  background: #fff;
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+/* 覆盖 .sheet-scroll img 的 width:100%，二维码必须限宽才好扫 */
+.sheet-scroll .qr-img {
+  width: 210px;
+  height: 210px;
+  max-width: 62vw;
+  display: block;
+  border-radius: 8px;
+  box-shadow: none;
+  object-fit: contain;
+}
+
+/* 长按识别 / 长按保存的前提：不能被 user-select 或 touch-callout 禁用。
+   这里显式声明一次，避免以后新增全局 reset 时把长按能力误伤。 */
+.qr-img,
+#sheet-img {
+  -webkit-touch-callout: default;
+  -webkit-user-select: auto;
+  user-select: auto;
+  pointer-events: auto;
+}
+.qr-tip {
+  text-align: center;
+  font-size: 12.5px;
+  line-height: 1.65;
+  color: var(--text-3);
+  margin: 0 0 18px;
+}
+
+.wx-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  padding: 8px 10px 8px 14px;
+  margin-bottom: 12px;
+}
+.wx-label {
+  flex: 0 0 auto;
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+.wx-code {
+  flex: 1 1 auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: #1A56C4;
+  word-break: break-all;
+  min-width: 0;
+}
+.wx-copy {
+  flex: 0 0 auto;
+  min-width: 64px;
+  min-height: 44px;          /* 手机端触摸区下限 */
+  padding: 0 14px;
+  border: 1px solid var(--blue-line);
+  background: var(--blue-soft);
+  color: #1A56C4;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: background .15s;
+}
+.wx-copy:active { background: #DFEAFD; }
+
+/* 有二维码时，微信号作为次要兜底信息展示 */
+.wx-row-sub {
+  background: transparent;
+  border-style: dashed;
+}
+.wx-row-sub .wx-code { font-size: 13.5px; }
+
+.wx-note {
+  font-size: 12.5px;
+  line-height: 1.7;
+  color: var(--text-2);
+  background: var(--amber-bg);
+  border: 1px solid var(--amber-line);
+  border-radius: 10px;
+  padding: 11px 13px;
+  margin: 0 0 16px;
+}
+.wx-greet { margin-top: 4px; }
+.wx-greet-tip {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-3);
+  margin: 9px 0 0;
+}
+
+.sheet-note {
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: var(--text-2);
+  background: #fff;
+  border: 1px solid var(--line-soft);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  word-break: break-all;
+}
+.sheet-note b { color: var(--text); }
+.sheet-note code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 13px;
+  background: var(--bg);
+  padding: 2px 6px;
+  border-radius: 5px;
+  color: #1A56C4;
+}
+
+/* toast */
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: 88px;
+  transform: translate(-50%, 12px);
+  z-index: 90;
+  background: rgba(15, 27, 45, .93);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 11px 20px;
+  border-radius: 100px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .22s, transform .22s;
+  white-space: nowrap;
+  max-width: 88vw;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* 弹层打开时，提示气泡上移，避免压住弹层底部的操作按钮 */
+#sheet.show ~ #toast {
+  bottom: auto;
+  top: 13%;
+}
+
+/* 页脚 */
+.page-foot {
+  padding: 8px 20px calc(30px + var(--safe-b));
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-3);
+  line-height: 1.7;
+}
+
+.fade-in { animation: fade .34s ease; }
+@keyframes fade { from { opacity: 0; transform: translateY(6px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- 顶部进度（答题阶段显示） -->
+  <header id="topbar">
+    <div class="topbar-in">
+      <button class="tb-back" id="tb-back" data-act="back" type="button" aria-label="返回上一题">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#0F1B2D" stroke-width="2.2"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
+      </button>
+      <span class="tb-label" id="tb-label"></span>
+      <span class="tb-count" id="tb-count"></span>
+    </div>
+    <div class="tb-bar"><i id="tb-bar"></i></div>
+  </header>
+
+  <!-- 主内容区 -->
+  <main id="screen"></main>
+
+</div>
+
+<!-- 生成报告过渡 -->
+<div id="loading">
+  <div class="spinner" aria-hidden="true"></div>
+  <p class="loading-t loading-dots">正在生成你的企业AI诊断报告……</p>
+</div>
+
+<!-- 底部弹层：结果长图 / 联系方式 -->
+<div id="sheet" role="dialog" aria-modal="true">
+  <div class="sheet-mask" id="sheet-mask"></div>
+  <div class="sheet-panel">
+    <div class="sheet-head">
+      <span class="sheet-title" id="sheet-title">诊断报告长图</span>
+      <button class="sheet-close" id="sheet-close" type="button">关闭</button>
+    </div>
+    <div class="sheet-scroll">
+      <img id="sheet-img" alt="企业AI落地成熟度诊断报告长图">
+      <p class="sheet-tip">在微信 / 手机浏览器中<strong>长按图片</strong>即可保存或转发</p>
+      <button class="btn btn-primary btn-sm" id="sheet-download" type="button">保存到本地</button>
+      <div style="height:10px"></div>
+      <button class="btn btn-outline btn-sm" id="sheet-copy" type="button">复制文字版结果</button>
+    </div>
+  </div>
+</div>
+
+<!-- 轻提示 -->
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- 依赖顺序：配置 → 评分 → 报告 → 存储 → 长图 → 交互 -->
+<script>
+/*!
+ * config.js —— 全部内容配置层
+ * ---------------------------------------------------------------
+ * 这个文件是整个测评产品的「唯一内容源」。
+ * 想改题目、改分值、改文案、改阶段判断，只改这一个文件即可，
+ * 不需要动 index.html、app.js、scoring.js 里的任何一行逻辑。
+ * ---------------------------------------------------------------
+ */
+window.AI_CONFIG = (function () {
+  'use strict';
+
+  /* ============================================================
+   * 1. 全局信息
+   * ============================================================ */
+  var meta = {
+    title: '企业AI落地成熟度测评',
+    subtitle: '你的企业，AI真正落地了吗？',
+    version: '1.0.0',
+    footerNote: '本报告由《企业AI落地成熟度测评》生成，仅供企业AI落地诊断参考。'
+  };
+
+  /* ============================================================
+   * 2. 评分口径
+   *    A/B/C/D 对应的成熟度百分比系数。
+   *    单题得分 = 该题满分权重 × 系数
+   * ============================================================ */
+  var scoreRatio = { A: 0, B: 0.33, C: 0.67, D: 1 };
+
+  /* ============================================================
+   * 3. 四大维度（满分合计 100）
+   * ============================================================ */
+  var dimensions = [
+    {
+      id: 'foundation',
+      name: 'AI应用基础',
+      weight: 20,
+      desc: '员工使用AI的广度与深度，以及公司在组织层面推动AI的方式'
+    },
+    {
+      id: 'scenario',
+      name: '业务场景应用',
+      weight: 25,
+      desc: 'AI进入了多少真实业务场景，以及应用是否稳定、可复制、不依赖个人'
+    },
+    {
+      id: 'process',
+      name: '流程重构与协同',
+      weight: 30,
+      desc: 'AI是否真正改变了原有工作流程，以及人机分工与跨部门协同程度'
+    },
+    {
+      id: 'result',
+      name: '组织与经营结果',
+      weight: 25,
+      desc: 'AI是否被衡量、被评估，并沉淀为持续推进的组织机制'
+    }
+  ];
+
+  /* ============================================================
+   * 4. 12 道计分题
+   *    dim = 所属维度 id；weight 由维度自动均分，无需在此填写
+   * ============================================================ */
+  var questions = [
+    /* ---------- 维度一：AI应用基础（20分） ---------- */
+    {
+      id: 'Q1',
+      dim: 'foundation',
+      title: '目前公司员工使用AI的情况，更接近哪一种？',
+      options: [
+        { key: 'A', text: '基本没有使用' },
+        { key: 'B', text: '少数员工自己尝试，没有统一推动' },
+        { key: 'C', text: '多个岗位已经比较频繁地使用' },
+        { key: 'D', text: 'AI已经成为部分岗位日常工作的固定组成部分' }
+      ]
+    },
+    {
+      id: 'Q2',
+      dim: 'foundation',
+      title: '公司目前使用AI，主要处于哪个层面？',
+      options: [
+        { key: 'A', text: '还在了解和学习阶段' },
+        { key: 'B', text: '主要用于写文案、做图、查资料等个人提效' },
+        { key: 'C', text: '已进入内容、客服、销售、运营等具体工作场景' },
+        { key: 'D', text: '已进入多个核心业务环节，并形成稳定应用' }
+      ]
+    },
+    {
+      id: 'Q3',
+      dim: 'foundation',
+      title: '公司目前推动AI应用的方式，更接近哪一种？',
+      options: [
+        { key: 'A', text: '暂时没有明确推动' },
+        { key: 'B', text: '主要靠员工自己探索' },
+        { key: 'C', text: '部分部门/负责人开始有意识推动' },
+        { key: 'D', text: '公司层面已有明确负责人、目标或推进机制' }
+      ]
+    },
+
+    /* ---------- 维度二：业务场景应用（25分） ---------- */
+    {
+      id: 'Q4',
+      dim: 'scenario',
+      title: '目前公司已经有多少业务场景稳定使用AI？',
+      options: [
+        { key: 'A', text: '暂时没有' },
+        { key: 'B', text: '1-2个尝试性场景' },
+        { key: 'C', text: '3-5个比较明确的业务场景' },
+        { key: 'D', text: '5个以上，并且持续扩展' }
+      ]
+    },
+    {
+      id: 'Q5',
+      dim: 'scenario',
+      title: '目前AI应用的稳定程度，更接近哪一种？',
+      options: [
+        { key: 'A', text: '偶尔尝试，没有形成稳定用法' },
+        { key: 'B', text: '有一些效果不错的方法，但比较依赖个人' },
+        { key: 'C', text: '部分场景已经形成固定方法/SOP' },
+        { key: 'D', text: '已嵌入业务流程，可以稳定、重复运行' }
+      ]
+    },
+    {
+      id: 'Q6',
+      dim: 'scenario',
+      title: '如果目前最会使用AI的员工离职，公司已有AI应用会怎样？',
+      options: [
+        { key: 'A', text: '没什么影响，因为目前AI应用还很少' },
+        { key: 'B', text: '很多AI用法可能会随之中断' },
+        { key: 'C', text: '部分方法已经沉淀，其他员工可以继续使用' },
+        { key: 'D', text: '大部分已经沉淀到流程、SOP或系统中，不依赖个人' }
+      ]
+    },
+
+    /* ---------- 维度三：流程重构与协同（30分） ---------- */
+    {
+      id: 'Q7',
+      dim: 'process',
+      title: 'AI进入业务以后，原来的工作流程发生了多大变化？',
+      options: [
+        { key: 'A', text: '基本没有变化' },
+        { key: 'B', text: '原流程不变，只是部分工作做得更快' },
+        { key: 'C', text: '部分岗位已经围绕AI重新设计工作方式' },
+        { key: 'D', text: '多个业务流程已经围绕AI重新梳理和设计' }
+      ]
+    },
+    {
+      id: 'Q8',
+      dim: 'process',
+      title: '公司目前“人和AI”的分工清晰吗？',
+      options: [
+        { key: 'A', text: '没有明确分工' },
+        { key: 'B', text: '主要靠员工自己判断什么时候使用AI' },
+        { key: 'C', text: '部分岗位已经明确哪些工作由AI完成、哪些由人判断' },
+        { key: 'D', text: '已形成比较清晰的人机协同规则，包括权限、审核和异常处理' }
+      ]
+    },
+    {
+      id: 'Q9',
+      dim: 'process',
+      title: 'AI在不同岗位/部门之间的协同程度如何？',
+      options: [
+        { key: 'A', text: '基本没有AI应用' },
+        { key: 'B', text: '各岗位各自使用，彼此独立' },
+        { key: 'C', text: '部分上下游环节已经开始通过AI连接' },
+        { key: 'D', text: 'AI已经连接多个业务环节，形成相对完整的自动化/半自动化工作流' }
+      ]
+    },
+
+    /* ---------- 维度四：组织与经营结果（25分） ---------- */
+    {
+      id: 'Q10',
+      dim: 'result',
+      title: '公司目前如何衡量AI应用效果？',
+      options: [
+        { key: 'A', text: '基本没有衡量' },
+        { key: 'B', text: '主要看使用人数、使用次数等' },
+        { key: 'C', text: '会看效率、时间、人工成本等变化' },
+        { key: 'D', text: '会进一步看收入、转化率、成本、产能等经营指标' }
+      ]
+    },
+    {
+      id: 'Q11',
+      dim: 'result',
+      title: '公司目前是否能够判断AI的投入产出？',
+      options: [
+        { key: 'A', text: '完全不清楚' },
+        { key: 'B', text: '感觉有效，但算不清楚' },
+        { key: 'C', text: '部分场景已经能够计算投入与产出' },
+        { key: 'D', text: '已建立相对明确的AI效果/ROI评估机制' }
+      ]
+    },
+    {
+      id: 'Q12',
+      dim: 'result',
+      title: '企业目前有没有形成持续推进AI的组织机制？',
+      options: [
+        { key: 'A', text: '没有，主要靠个别员工兴趣' },
+        { key: 'B', text: '有人在推动，但比较零散' },
+        { key: 'C', text: '已有明确负责人，并持续推进重点场景' },
+        { key: 'D', text: '已形成负责人、业务部门、技术/工具、效果评估之间的协同机制' }
+      ]
+    }
+  ];
+
+  /* ============================================================
+   * 5. 不计分的需求题（多选）
+   * ============================================================ */
+  var needsQuestion = {
+    title: '目前你最希望AI帮助企业解决哪些问题？',
+    hint: '可多选，这一题不计入100分，用于生成更有针对性的诊断建议',
+    multiple: true,
+    options: [
+      '获客增长', '内容生产', '销售转化', '客户服务',
+      '运营提效', '数据分析', '内部管理', '知识管理',
+      '流程自动化', 'AI Agent', '暂时不知道从哪里开始', '其他'
+    ]
+  };
+
+  /* 需求 → 个性化建议（结果页会随用户选择一起展示） */
+  var needAdvice = {
+    '获客增长': '获客环节优先做「素材批量生产 + 投放快速测试」，把测试周期从周压到天。',
+    '内容生产': '先统一内容生产的选题—成稿—改写链路，把个人经验变成团队可复用的模板。',
+    '销售转化': '把AI用在客户画像梳理、话术生成与跟进提醒上，重点看转化率变化。',
+    '客户服务': '先做知识库 + 标准问答，再逐步过渡到AI辅助应答与工单分流。',
+    '运营提效': '找出运营团队最高频、最重复的三件事，逐件用AI重写工作方式。',
+    '数据分析': '把「取数—分析—结论」中AI能承接的环节拎出来，先固定分析口径。',
+    '内部管理': '从会议纪要、制度问答、任务跟进这类高频管理动作开始切入。',
+    '知识管理': '建立企业自己的知识底座，让AI的回答基于内部资料而不是通用网络信息。',
+    '流程自动化': '先画出跨岗位流程，再判断哪些节点交给AI，避免只做单点提效。',
+    'AI Agent': '在已有稳定场景基础上再考虑Agent，否则容易做出无法稳定运行的东西。',
+    '暂时不知道从哪里开始': '建议先做一次业务任务盘点，找出3个「高频 × 重复 × 高成本」的候选场景。',
+    '其他': '建议把具体问题进一步拆解到具体岗位和具体任务，再判断是否适合用AI切入。'
+  };
+
+  /* ============================================================
+   * 6. 基础信息采集（不计分，随结果一并记录）
+   * ============================================================ */
+  var profileQuestions = [
+    {
+      id: 'identity',
+      label: '您目前的身份',
+      options: ['企业创始人/老板', '企业高管', '业务负责人', '数字化/AI负责人', '其他']
+    },
+    {
+      id: 'industry',
+      label: '您所在的行业',
+      options: ['电商', '制造业', '零售', '专业服务', '教育', '互联网/科技', '医疗/大健康', '房地产/家居', '其他']
+    },
+    {
+      id: 'scale',
+      label: '企业目前的人员规模',
+      options: ['1-10人', '11-30人', '31-100人', '101-500人', '500人以上']
+    }
+  ];
+
+  /* ============================================================
+   * 7. 成熟度阶段（L1-L4）
+   *    blocks 支持三种块：lead（引导句）/ text（正文）/ list（要点）
+   * ============================================================ */
+  var stages = [
+    {
+      level: 'L1',
+      name: 'AI探索期',
+      min: 0,
+      max: 25,
+      oneLiner: 'AI目前主要停留在学习、尝试和个人使用阶段。',
+      headline: '你的企业正在进入AI探索阶段',
+      blocks: [
+        { type: 'text', text: '目前AI更多处于了解、学习和个人尝试阶段，还没有形成稳定的业务应用。' },
+        { type: 'lead', text: '这一阶段最容易出现的问题是：' },
+        { type: 'text', text: '学了很多工具，却不知道应该从企业哪个业务场景真正开始。' }
+      ],
+      suggestion: {
+        title: '核心建议',
+        text: '现在最重要的不是让全员学习更多AI工具，而是找到第一批值得AI改造的业务场景。'
+      },
+      path: {
+        title: '建议路径',
+        steps: [
+          '找到3个「高频 × 重复 × 高成本」的业务任务',
+          '选择1个场景',
+          '用AI重新设计工作方式',
+          '验证效率和实际结果',
+          '再逐步复制'
+        ]
+      }
+    },
+    {
+      level: 'L2',
+      name: '场景应用期',
+      min: 26,
+      max: 50,
+      oneLiner: 'AI已经开始创造效率，但目前仍以点状应用和个人提效为主。',
+      headline: '你的企业已经开始用AI，但还停留在“点状提效”',
+      blocks: [
+        { type: 'text', text: '团队可能已经在内容、客服、运营、数据等工作中使用AI，但很多能力仍然掌握在个人手里。' },
+        { type: 'lead', text: '目前最大的挑战不是“员工会不会用AI”，而是：' },
+        { type: 'text', text: '如何把个人AI能力，沉淀成企业稳定、可复制的工作方式。' }
+      ],
+      suggestion: {
+        title: '核心建议',
+        text: '下一阶段重点从“这个员工会用AI”，走向“这个岗位有一套AI工作方式”。'
+      },
+      path: {
+        title: '建议路径',
+        steps: [
+          '梳理重点AI场景',
+          '沉淀Prompt与方法',
+          '形成岗位SOP',
+          '明确人机分工',
+          '建立效果指标'
+        ]
+      }
+    },
+    {
+      level: 'L3',
+      name: '流程重构期',
+      min: 51,
+      max: 75,
+      oneLiner: 'AI正在进入核心业务流程，企业开始从个人提效走向组织提效。',
+      headline: '你的企业正在从“AI场景”进入“AI流程”',
+      blocks: [
+        { type: 'text', text: '企业已经跨过单纯的工具使用阶段，部分业务开始形成稳定的AI应用。' },
+        { type: 'lead', text: '下一阶段最大的挑战是：' },
+        { type: 'text', text: '如何把一个个独立的AI场景连接起来，真正重构业务流程。' }
+      ],
+      suggestion: {
+        title: '核心建议',
+        text: '下一阶段的关键不是增加更多AI工具，而是把已经跑通的AI场景连接起来，让AI从「单点工具」变成「流程的一部分」。',
+        itemsLabel: '重点关注',
+        items: ['流程设计', '跨部门协同', '人机分工', '效果评估', '自动化连接']
+      },
+      path: {
+        title: '提效路径',
+        steps: ['个人提效', '岗位提效', '流程提效', '组织提效']
+      }
+    },
+    {
+      level: 'L4',
+      name: 'AI组织进化期',
+      min: 76,
+      max: 100,
+      oneLiner: 'AI正在成为企业业务流程、组织协同和经营体系的一部分。',
+      headline: '你的企业正在进入AI深度应用阶段',
+      blocks: [
+        { type: 'text', text: 'AI已经不再只是辅助工具，而开始成为企业业务流程和组织运行的一部分。' },
+        { type: 'lead', text: '下一阶段重点已经不是“还能用AI做什么”，而是：' },
+        { type: 'text', text: '如何持续管理AI创造的价值与风险。' }
+      ],
+      suggestion: {
+        title: '重点关注',
+        items: ['AI ROI', 'Agent治理', '成本控制', '流程自动化', '权限管理', '效果评估', '组织机制', '人机协同']
+      },
+      path: {
+        title: '经营视角',
+        steps: ['价值可衡量', '风险可控制', '流程可复制', '组织可持续']
+      }
+    }
+  ];
+
+  /* ============================================================
+   * 8. 薄弱维度 → 个性化建议
+   * ============================================================ */
+  var weakAdvice = {
+    foundation: '建议先建立企业内部AI使用基础，明确重点岗位、工具和负责人，不必一开始追求复杂自动化。',
+    scenario: '建议从真实业务问题出发，优先寻找高频、重复、标准化程度较高的工作场景，而不是继续增加AI工具。',
+    process: '建议重点检查：AI是否只是让原来的工作做得更快，而没有真正改变工作流程。下一阶段需要重新设计人、AI和流程之间的关系。',
+    result: '建议建立AI效果评估机制，不只统计使用次数，更要关注时间、成本、产能、转化率和收入等经营指标。'
+  };
+
+  /* ============================================================
+   * 9. 结果页引导模块（企业AI游学 / 深度交流）
+   *    按阶段区分强度，整体保持克制、专业。
+   *    ctaUrl / leadUrl 填上你的链接即可生效；留空则弹出联系方式。
+   * ============================================================ */
+  var guide = {
+    /* ------------------------------------------------------------
+     * 联系方式（点击「了解企业AI游学」/「领取完整诊断建议」后弹出）
+     * 只改这一块即可。
+     * 改完要执行 node tools/build.js 重新生成 dist/ 再部署，
+     * 否则用户可能因为缓存而看到旧页面。
+     * ------------------------------------------------------------ */
+    contact: {
+      /* 1) 二维码图片路径（相对 index.html）。
+       *    把图片放进 assets/img/，然后这里填 'assets/img/wechat-qr.png'
+       *    ★ 微信内用户长按即可识别添加，这是转化率最高的方式
+       *    ★ 必须用 PNG / JPG（微信不支持长按识别 SVG）
+       *    ★ 建议正方形、不小于 430×430，背景纯白无圆角
+       *    ★ 个人微信二维码约 7 天失效，需定期换图；
+       *      更推荐企业微信「联系我」活码，永久有效、可自动分流 */
+      qrcode: '',
+
+      /* 2) 微信号（留空则弹层不显示微信号行） */
+      wechat: 'budao008',
+
+      /* 3) 二维码下方的操作提示 */
+      qrcodeTip: '长按二维码识别添加，或截图后在微信「扫一扫」中打开',
+
+      /* 4) 补充说明 */
+      note: '添加时请备注「AI测评」，方便我们快速对接',
+
+      /* 5) 一键复制给客服的打招呼语（降低用户开口成本） */
+      title: '添加对接顾问',
+      greeting: '你好，我刚完成《企业AI落地成熟度测评》，想了解企业AI游学。'
+    },
+    byStage: {
+      L1: {
+        title: '先看看已经跑通的企业，是怎么开始的',
+        body: [
+          '这个阶段最省时间的做法，不是继续学工具，而是先看清一家企业是从哪个场景切入、又怎么把它跑稳的。',
+          '9月23日，我们将走进杭州AI实践企业，现场看真实的落地路径。'
+        ],
+        bullets: [
+          '第一家企业通常从哪个场景开始',
+          '怎么判断一个场景值不值得做',
+          '如何避免“学了工具却落不了地”'
+        ]
+      },
+      L2: {
+        title: '从“知道问题”到“现场看企业怎么做”',
+        body: [
+          '如果你的企业正在从个人AI使用走向业务场景，比起继续学习更多工具，你可能更需要看一家真正把AI放进业务流程的企业，是怎么一步一步做的。',
+          '9月23日，我们将走进杭州AI实践企业。'
+        ],
+        bullets: [
+          'AI如何进入真实业务场景',
+          'AI如何进入获客、运营与管理流程',
+          '企业如何从个人提效走向流程重构',
+          '团队如何建立人机协同'
+        ]
+      },
+      L3: {
+        title: '从“知道问题”到“现场看企业怎么做”',
+        body: [
+          '如果你的企业正在从AI场景走向流程重构，比起继续学习更多工具，你可能更需要看一家真正把AI放进业务流程的企业，是怎么一步一步做的。',
+          '9月23日，我们将走进杭州AI实践企业。'
+        ],
+        bullets: [
+          'AI如何进入真实业务场景',
+          'AI如何进入获客、运营与管理流程',
+          '企业如何从个人提效走向流程重构',
+          '团队如何建立人机协同'
+        ]
+      },
+      L4: {
+        title: '和同样在推进AI的企业，交流组织级经验',
+        body: [
+          '走到这个阶段，难点通常已经不在工具，而在组织机制、效果评估与风险控制。',
+          '9月23日，我们将走进杭州AI实践企业，做一次同层级企业的现场交流。'
+        ],
+        bullets: [
+          'AI ROI 如何真正被算清楚',
+          '人机协同的规则与权限如何设计',
+          'AI如何进入经营指标而非只做提效'
+        ]
+      }
+    },
+    ctaLabel: '了解企业AI游学',
+    ctaUrl: '',
+    leadLabel: '领取完整诊断建议',
+    leadUrl: ''
+  };
+
+  /* ============================================================
+   * 10. 数据存储配置
+   *     endpoint 留空 = 仅本地保存（localStorage）。
+   *     填入接口地址后，每份结果会同时 POST 一份到你的接口，
+   *     可用于飞书多维表格 / 腾讯文档 / 自建 API / 任何 Webhook。
+   * ============================================================ */
+  var storage = {
+    endpoint: '',          // 例：https://your-api.com/ai-maturity/submit
+    localKey: 'ai_maturity_v1',
+    enableConsoleLog: true
+  };
+
+  /* ============================================================
+   * 11. 样本对标（无真实数据时必须保持隐藏，不允许伪造）
+   *     show = false 时，结果页不会出现任何百分比模块。
+   * ============================================================ */
+  var benchmark = {
+    show: false,           // 有真实样本数据后改为 true
+    sampleSize: 0,
+    // 返回“超过样本中 X% 的企业”，无数据时返回 null
+    percentileOf: function (total) { return null; }
+  };
+
+  return {
+    meta: meta,
+    scoreRatio: scoreRatio,
+    dimensions: dimensions,
+    questions: questions,
+    needsQuestion: needsQuestion,
+    needAdvice: needAdvice,
+    profileQuestions: profileQuestions,
+    stages: stages,
+    weakAdvice: weakAdvice,
+    guide: guide,
+    storage: storage,
+    benchmark: benchmark,
+    /* 来源渠道映射：?source=xxx 自动转成中文记录 */
+    sourceMap: {
+      xiaohongshu: '小红书',
+      wechat: '微信',
+      shipinhao: '视频号',
+      douyin: '抖音',
+      poster: '海报',
+      friend: '好友转发',
+      offline: '线下活动'
+    }
+  };
+})();
+
+</script>
+<script>
+/*!
+ * scoring.js —— 评分引擎（纯计算，不碰任何 DOM）
+ * ---------------------------------------------------------------
+ * 口径说明：
+ *   单题得分 = (维度满分 ÷ 该维度题目数) × 选项系数(0 / 0.33 / 0.67 / 1)
+ *   维度实际分 = 该维度3题得分之和        （满分 20 / 25 / 30 / 25）
+ *   维度百分制 = 维度实际分 ÷ 该维度满分 × 100   ← 用于结果页横向比较
+ *   总成熟度分 = 四维度实际分相加后四舍五入取整（满分 100）
+ *
+ *   注意：总分是按 20 / 25 / 30 / 25 加权得到的，
+ *        不是四个百分制分数的简单平均。
+ * ---------------------------------------------------------------
+ */
+window.AI_SCORING = (function () {
+  'use strict';
+
+  var C = window.AI_CONFIG;
+
+  /** 取某维度的题目 */
+  function questionsOf(dimId) {
+    return C.questions.filter(function (q) { return q.dim === dimId; });
+  }
+
+  /** 选项系数 */
+  function ratioOf(key) {
+    var r = C.scoreRatio[key];
+    return typeof r === 'number' ? r : 0;
+  }
+
+  /**
+   * 核心计算
+   * @param {Object} answers 形如 { Q1:'A', Q2:'C', ... }
+   * @returns {{dimensions:Array, total:Number, answered:Number, missing:Array, stage:Object, weakest:Object, strongest:Object}}
+   */
+  function compute(answers) {
+    answers = answers || {};
+
+    var dims = C.dimensions.map(function (d) {
+      var qs = questionsOf(d.id);
+      var perQuestion = d.weight / qs.length;
+      var raw = 0;
+
+      var detail = qs.map(function (q) {
+        var key = answers[q.id] || null;
+        var ratio = key ? ratioOf(key) : 0;
+        var score = perQuestion * ratio;
+        raw += score;
+        return { id: q.id, key: key, ratio: ratio, score: score };
+      });
+
+      return {
+        id: d.id,
+        name: d.name,
+        weight: d.weight,
+        desc: d.desc,
+        score: raw,                                        // 实际贡献分（保留小数）
+        scoreText: (Math.round(raw * 10) / 10).toFixed(1), // 展示用，1位小数
+        pct: Math.round((raw / d.weight) * 100),           // 0-100 百分制
+        detail: detail
+      };
+    });
+
+    var sum = dims.reduce(function (a, d) { return a + d.score; }, 0);
+    var total = Math.round(sum); // 四舍五入取整
+
+    var missing = C.questions
+      .filter(function (q) { return !answers[q.id]; })
+      .map(function (q) { return q.id; });
+
+    /* 最强 / 最弱维度：按百分制比较（不是按绝对分，因为各维度满分不同）
+       出现并列时取排序靠前的维度 */
+    var ranked = dims.slice().sort(function (a, b) { return b.pct - a.pct; });
+    var strongest = ranked[0] || null;
+    var weakest = ranked[ranked.length - 1] || null;
+
+    return {
+      dimensions: dims,
+      total: total,
+      answered: C.questions.length - missing.length,
+      missing: missing,
+      stage: stageOf(total),
+      strongest: strongest,
+      weakest: weakest,
+      /* 维度差值：用于判断是否“明显短板” */
+      gap: strongest && weakest ? strongest.pct - weakest.pct : 0
+    };
+  }
+
+  /** 根据总分判断所处阶段（区间由 config.stages 配置） */
+  function stageOf(total) {
+    for (var i = 0; i < C.stages.length; i++) {
+      var s = C.stages[i];
+      if (total >= s.min && total <= s.max) return s;
+    }
+    return total < C.stages[0].min ? C.stages[0] : C.stages[C.stages.length - 1];
+  }
+
+  /** 生成「四大维度诊断」的一句话 */
+  function dimensionDiagnosis(res) {
+    if (!res.strongest || !res.weakest) return '';
+    if (res.gap <= 5) {
+      return '你的企业在四个维度上的表现比较均衡，没有特别明显的短板，下一阶段的关键是选择其中一到两个维度做深。';
+    }
+    return '目前你的企业在【' + res.strongest.name + '】已经具备一定基础，但【' +
+      res.weakest.name + '】是下一阶段最值得重点突破的环节。';
+  }
+
+  /** 薄弱维度的个性化建议 */
+  function weakAdviceOf(res) {
+    return (res.weakest && C.weakAdvice[res.weakest.id]) || '';
+  }
+
+  return {
+    compute: compute,
+    stageOf: stageOf,
+    dimensionDiagnosis: dimensionDiagnosis,
+    weakAdviceOf: weakAdviceOf,
+    ratioOf: ratioOf,
+    questionsOf: questionsOf
+  };
+})();
+
+</script>
+<script>
+/*!
+ * report.js —— 报告生成层
+ * ---------------------------------------------------------------
+ * 把「分数」翻译成「一份诊断报告」。这里只负责组织文案结构，
+ * 所有文案都来自 config.js，方便随时替换。
+ * ---------------------------------------------------------------
+ */
+window.AI_REPORT = (function () {
+  'use strict';
+
+  var C = window.AI_CONFIG;
+  var S = window.AI_SCORING;
+
+  /** 阶段判断的强弱项表述 */
+  function buildResult(state, res) {
+    var stage = res.stage;
+    var src = window.AI_STORE.parseSource();
+
+    /* 需求题的针对性建议 */
+    var needsAdvice = state.needs
+      .map(function (n) { return C.needAdvice[n] ? { need: n, advice: C.needAdvice[n] } : null; })
+      .filter(Boolean);
+
+    /* 按阶段匹配引导模块 */
+    var guide = C.guide.byStage[stage.level] || C.guide.byStage.L2;
+    var guideVM = {
+      title: guide.title,
+      body: guide.body,
+      bullets: guide.bullets,
+      ctaLabel: C.guide.ctaLabel,
+      ctaUrl: C.guide.ctaUrl,
+      leadLabel: C.guide.leadLabel,
+      leadUrl: C.guide.leadUrl
+    };
+
+    /* 样本对标：无真实数据时保持 null，界面自动隐藏 */
+    var percentile = null;
+    if (C.benchmark.show && typeof C.benchmark.percentileOf === 'function') {
+      percentile = C.benchmark.percentileOf(res.total);
+    }
+
+    return {
+      total: res.total,
+      stage: stage,
+      level: stage.level,
+      stageName: stage.name,
+      oneLiner: stage.oneLiner,
+      headline: stage.headline,
+      blocks: stage.blocks,
+      suggestion: stage.suggestion,
+      path: stage.path,
+      dimensions: res.dimensions,
+      strongest: res.strongest,
+      weakest: res.weakest,
+      gap: res.gap,
+      dimDiagnosis: S.dimensionDiagnosis(res),
+      weakAdvice: S.weakAdviceOf(res),
+      needs: state.needs.slice(),
+      needsAdvice: needsAdvice,
+      guide: guideVM,
+      percentile: percentile,
+      contact: C.guide.contact,
+      profile: state.profile,
+      source: src.source,
+      generatedAt: new Date()
+    };
+  }
+
+  /** 分享/复制用的纯文本摘要 */
+  function toPlainText(vm) {
+    var L = [];
+    L.push(C.meta.title);
+    L.push('');
+    L.push('总成熟度评分：' + vm.total + ' / 100');
+    L.push('当前阶段：' + vm.level + ' ' + vm.stageName);
+    L.push(vm.oneLiner);
+    L.push('');
+    L.push('【四大维度】');
+    vm.dimensions.forEach(function (d) {
+      L.push('· ' + d.name + '：' + d.pct + '/100');
+    });
+    L.push('');
+    L.push('【当前诊断】' + vm.headline);
+    L.push(vm.blocks.filter(function (b) { return b.type === 'text'; })
+      .map(function (b) { return b.text; }).join(''));
+    L.push('');
+    L.push('【核心建议】' + (vm.suggestion.text || (vm.suggestion.items || []).join('、')));
+    L.push('');
+    L.push('【待突破维度】' + vm.weakest.name + '：' + vm.weakAdvice);
+    return L.join('\n');
+  }
+
+  return { buildResult: buildResult, toPlainText: toPlainText };
+})();
+
+</script>
+<script>
+/*!
+ * storage.js —— 数据存储层
+ * ---------------------------------------------------------------
+ * 设计成「可插拔适配器」，你现在不需要配置任何数据库就能跑，
+ * 未来接数据库 / 表格 / API 时只需要改 config.storage.endpoint，
+ * 不需要改业务代码。
+ *
+ * 目前的行为：
+ *   1) 永久保存到浏览器 localStorage（离线可用，不会丢）
+ *   2) 如果 config.storage.endpoint 填了地址，同时 POST 一份到你的接口
+ *   3) console 里可以用 __AI_DATA.export() 导出全部数据为 CSV
+ * ---------------------------------------------------------------
+ */
+window.AI_STORE = (function () {
+  'use strict';
+
+  var C = window.AI_CONFIG;
+  var KEY = C.storage.localKey;
+  var ENDPOINT = C.storage.endpoint;
+
+  /* ---------- 来源参数解析（UTM / source） ---------- */
+  function parseSource() {
+    var q = {};
+    try {
+      var sp = new URLSearchParams(window.location.search);
+      sp.forEach(function (v, k) { q[k] = v; });
+    } catch (e) { /* 极老浏览器忽略 */ }
+
+    var raw = (q.source || q.utm_source || '').toLowerCase();
+    var label = C.sourceMap[raw] || (raw ? raw : '直接访问');
+
+    return {
+      source: label,                 // 中文来源：小红书 / 微信 / 视频号 ...
+      sourceRaw: raw || '',          // 原始参数值
+      utmSource: q.utm_source || '',
+      utmMedium: q.utm_medium || '',
+      utmCampaign: q.utm_campaign || '',
+      utmContent: q.utm_content || '',
+      referrer: document.referrer || ''
+    };
+  }
+
+  function isWeixin() {
+    return /micromessenger/i.test(navigator.userAgent || '');
+  }
+
+  function nowText() {
+    var d = new Date();
+    var p = function (n) { return (n < 10 ? '0' : '') + n; };
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) +
+      ' ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+  }
+
+  function buildRecord(state, result) {
+    var src = parseSource();
+    var dims = {};
+    result.dimensions.forEach(function (d) { dims[d.id] = d; });
+
+    return {
+      /* --- 时间 --- */
+      submittedAt: new Date().toISOString(),
+      submittedAtText: nowText(),
+
+      /* --- 基础信息 --- */
+      identity: state.profile.identity || '',
+      industry: state.profile.industry || '',
+      scale: state.profile.scale || '',
+
+      /* --- 逐题作答 --- */
+      answers: Object.assign({}, state.answers),
+
+      /* --- 四维度得分（百分制 + 实际贡献分） --- */
+      dimFoundation: dims.foundation.pct,
+      dimScenario: dims.scenario.pct,
+      dimProcess: dims.process.pct,
+      dimResult: dims.result.pct,
+      scoreFoundation: dims.foundation.scoreText,
+      scoreScenario: dims.scenario.scoreText,
+      scoreProcess: dims.process.scoreText,
+      scoreResult: dims.result.scoreText,
+
+      /* --- 总分与阶段 --- */
+      total: result.total,
+      stage: result.stage.level,
+      stageName: result.stage.name,
+
+      /* --- 强弱项 --- */
+      strongestDim: result.strongest ? result.strongest.name : '',
+      weakestDim: result.weakest ? result.weakest.name : '',
+
+      /* --- 需求题 --- */
+      needs: state.needs.slice(),
+      needsText: state.needs.join('、'),
+
+      /* --- 来源与埋点 --- */
+      source: src.source,
+      sourceRaw: src.sourceRaw,
+      utmSource: src.utmSource,
+      utmMedium: src.utmMedium,
+      utmCampaign: src.utmCampaign,
+      utmContent: src.utmContent,
+      referrer: src.referrer,
+
+      /* --- 过程数据 --- */
+      durationSec: state.finishedAt && state.startedAt
+        ? Math.round((state.finishedAt - state.startedAt) / 1000) : null,
+
+      /* --- 环境 --- */
+      ua: navigator.userAgent,
+      inWeixin: isWeixin(),
+      pageUrl: window.location.href
+    };
+  }
+
+  /* ---------- 本地读写 ---------- */
+  function localList() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) { return []; }
+  }
+
+  function localAppend(rec) {
+    try {
+      var list = localList();
+      list.push(rec);
+      // 本地最多保留 500 条，避免长期使用后占满存储
+      if (list.length > 500) list = list.slice(list.length - 500);
+      localStorage.setItem(KEY, JSON.stringify(list));
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function localClear() {
+    try { localStorage.removeItem(KEY); return true; } catch (e) { return false; }
+  }
+
+  /* ---------- 远程上报（未配置时静默跳过） ---------- */
+  function remotePost(rec) {
+    if (!ENDPOINT) return;
+    var body = JSON.stringify(rec);
+
+    // 优先 sendBeacon：微信内点击按钮后跳转也不丢数据
+    try {
+      if (navigator.sendBeacon) {
+        var ok = navigator.sendBeacon(ENDPOINT,
+          new Blob([body], { type: 'application/json' }));
+        if (ok) return;
+      }
+    } catch (e) { /* fallthrough */ }
+
+    try {
+      fetch(ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: body,
+        keepalive: true,
+        mode: 'cors'
+      }).catch(function () { /* 静默失败，本地已留存 */ });
+    } catch (e) { /* 静默失败 */ }
+  }
+
+  /* ---------- 事件埋点（与测评结果分开存储，互不污染） ----------
+   * 用于记录「谁点了了解游学 / 领取建议」这类意向行为。
+   * 这是最有价值的线索：分数高又主动点击的人，值得优先跟进。
+   * ---------------------------------------------------------- */
+  var EVENT_KEY = KEY + '_events';
+
+  function localEventList() {
+    try {
+      var raw = localStorage.getItem(EVENT_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) { return []; }
+  }
+
+  function trackEvent(name, payload) {
+    var src = parseSource();
+    var rec = Object.assign({
+      _type: 'event',
+      event: name,
+      at: new Date().toISOString(),
+      atText: nowText(),
+      source: src.source,
+      inWeixin: isWeixin(),
+      pageUrl: window.location.href
+    }, payload || {});
+
+    // 远程上报（未配置 endpoint 时静默跳过）
+    remotePost(rec);
+
+    try {
+      var list = localEventList();
+      list.push(rec);
+      if (list.length > 500) list = list.slice(list.length - 500);
+      localStorage.setItem(EVENT_KEY, JSON.stringify(list));
+    } catch (e) { /* 忽略 */ }
+
+    if (C.storage.enableConsoleLog) {
+      console.log('[AI测评] 事件已记录：' + name, rec);
+    }
+    return rec;
+  }
+
+  /* ---------- 对外 ---------- */
+  function save(state, result) {
+    var rec = buildRecord(state, result);
+    localAppend(rec);
+    remotePost(rec);
+    if (C.storage.enableConsoleLog) {
+      console.log('[AI测评] 已记录一份结果：', rec);
+      console.log('[AI测评] 本地累计 ' + localList().length + ' 份。导出：__AI_DATA.export()');
+    }
+    return rec;
+  }
+
+  /** 导出事件 CSV（在浏览器 console 里调用 __AI_DATA.exportEvents()） */
+  function exportEvents() {
+    var list = localEventList();
+    if (!list.length) { console.log('暂无事件记录'); return ''; }
+    var cols = ['atText', 'event', 'cta', 'total', 'stage', 'weakestDim', 'needs', 'source', 'inWeixin'];
+    var escv = function (v) {
+      var s = v === null || v === undefined ? '' : String(v);
+      return '"' + s.replace(/"/g, '""').replace(/\r?\n/g, ' ') + '"';
+    };
+    var csv = '\uFEFF' + cols.join(',') + '\n' +
+      list.map(function (r) {
+        return cols.map(function (c) { return escv(r[c]); }).join(',');
+      }).join('\n');
+
+    try {
+      var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'AI测评点击事件_' + new Date().toISOString().slice(0, 10) + '.csv';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 3000);
+    } catch (e) { /* 忽略 */ }
+
+    return csv;
+  }
+
+  /** 导出 CSV（在浏览器 console 里调用 __AI_DATA.export()） */
+  function exportCSV() {
+    var list = localList();
+    if (!list.length) { console.log('暂无本地数据'); return ''; }
+    var cols = Object.keys(list[0]);
+    var esc = function (v) {
+      var s = v === null || v === undefined ? '' : String(v);
+      return '"' + s.replace(/"/g, '""').replace(/\r?\n/g, ' ') + '"';
+    };
+    var csv = '\uFEFF' + cols.join(',') + '\n' +
+      list.map(function (r) {
+        return cols.map(function (c) {
+          var v = r[c];
+          if (typeof v === 'object' && v !== null) v = JSON.stringify(v);
+          return esc(v);
+        }).join(',');
+      }).join('\n');
+
+    try {
+      var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'AI成熟度测评数据_' +
+        new Date().toISOString().slice(0, 10) + '.csv';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function () { URL.revokeObjectURL(a.href); }, 3000);
+    } catch (e) { /* 忽略 */ }
+
+    return csv;
+  }
+
+  return {
+    save: save,
+    trackEvent: trackEvent,
+    events: localEventList,
+    exportEvents: exportEvents,
+    parseSource: parseSource,
+    list: localList,
+    count: function () { return localList().length; },
+    clear: localClear,
+    export: exportCSV
+  };
+})();
+
+/* 方便在控制台查看/导出 */
+window.__AI_DATA = window.AI_STORE;
+
+</script>
+<script>
+/*!
+ * poster.js —— 结果长图生成（纯 Canvas 手绘，无第三方依赖）
+ * ---------------------------------------------------------------
+ * 为什么不用 html2canvas：外部库体积大、字体跨域容易失败、
+ * 微信里首屏加载慢。这里手绘一张 750 宽竖版报告图，2 倍图导出，
+ * 手机上长按即可保存 / 转发。
+ *
+ * 实现方式：两段式
+ *   1) 探针画布（1 倍）先跑一遍，量出总高度
+ *   2) 按总高度创建正式画布（2 倍），铺白底后完整绘制
+ * ---------------------------------------------------------------
+ */
+window.AI_POSTER = (function () {
+  'use strict';
+
+  var W = 750;      // 逻辑宽度
+  var SCALE = 2;    // 导出倍率（成图 1500px 宽）
+  var PAD = 56;     // 左右内边距
+  var PADW = W - PAD * 2;
+
+  var FONT = '"PingFang SC","Hiragino Sans GB","Microsoft YaHei",-apple-system,sans-serif';
+  var C_NAVY = '#0B1F3A', C_BLUE = '#1D6FF2';
+  var C_TEXT = '#0F1B2D', C_TEXT2 = '#5A6A80', C_TEXT3 = '#93A0B2';
+  var C_LINE = '#E4E9F0', C_SOFT = '#F4F7FC';
+  var C_AMBERBG = '#FFFBF3', C_AMBER = '#B7791F', C_AMBERTX = '#6B5320';
+
+  /* ================= 绘制工具 ================= */
+
+  function f(size, weight) {
+    return (weight || 'normal') + ' ' + size + 'px ' + FONT;
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    r = Math.min(r, h / 2, w / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  /* 中英混排换行：中文逐字、英文按词 */
+  function wrap(ctx, text, maxWidth) {
+    text = String(text == null ? '' : text);
+    var tokens = text.match(
+      /[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]|[A-Za-z0-9][A-Za-z0-9\.\/\-%+:]*|\s+|[\s\S]/g
+    ) || [];
+    var lines = [], line = '';
+    for (var i = 0; i < tokens.length; i++) {
+      var t = tokens[i];
+      if (line && ctx.measureText(line + t).width > maxWidth) {
+        lines.push(line);
+        line = (t === ' ' ? '' : t);
+      } else {
+        line += t;
+      }
+    }
+    if (line) lines.push(line);
+    return lines;
+  }
+
+  /** 画多行文字，返回消耗高度 */
+  function text(ctx, str, x, y, o) {
+    o = o || {};
+    var size = o.size || 26;
+    var lh = o.lh || Math.round(size * 1.6);
+    var maxW = o.maxWidth || PADW;
+
+    ctx.font = f(size, o.weight);
+    ctx.fillStyle = o.color || C_TEXT;
+    ctx.textAlign = o.align || 'left';
+    ctx.textBaseline = 'top';
+
+    var lines = wrap(ctx, str, maxW);
+    var startX = o.align === 'right' ? x + maxW : x;
+    for (var i = 0; i < lines.length; i++) {
+      ctx.fillText(lines[i], startX, y + i * lh);
+    }
+    return lines.length * lh;
+  }
+
+  function fmtDate(d) {
+    var p = function (n) { return (n < 10 ? '0' : '') + n; };
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) +
+      ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+
+  /* ================= 头部高度 ================= */
+
+  function headerHeight(ctx, vm) {
+    var y = 72;                       // 上留白
+    y += 34 + 36;                     // 小标题
+    y += 140 + 42;                    // 大分数
+    y += 64 + 38;                     // 阶段胶囊
+    ctx.font = f(27, 'normal');
+    var oneLines = wrap(ctx, vm.oneLiner, PADW);
+    y += oneLines.length * 46;
+    y += 72;                          // 下留白
+    return y;
+  }
+
+  /* ================= 完整绘制（返回总高度） ================= */
+
+  function paint(ctx, vm) {
+    ctx.textBaseline = 'top';
+
+    var hH = headerHeight(ctx, vm);
+
+    /* ---------- 头部深蓝底 ---------- */
+    ctx.fillStyle = C_NAVY;
+    ctx.fillRect(0, 0, W, hH);
+
+    var y = 72;
+
+    /* 小标题 */
+    ctx.font = f(26, '600');
+    ctx.fillStyle = '#7C93B0';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText('企业AI落地成熟度测评', PAD, y);
+    y += 34 + 36;
+
+    /* 大分数（基线对齐 /100） */
+    ctx.font = f(150, '700');
+    var numW = ctx.measureText(String(vm.total)).width;
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillText(String(vm.total), PAD, y + 140);
+    ctx.font = f(34, '600');
+    ctx.fillStyle = '#5E7699';
+    ctx.fillText('/ 100', PAD + numW + 16, y + 140);
+    ctx.textBaseline = 'top';
+    y += 140 + 42;
+
+    /* 阶段胶囊 */
+    var chip = vm.level + '　' + vm.stageName;
+    ctx.font = f(28, '700');
+    var chipW = ctx.measureText(chip).width + 52;
+    ctx.strokeStyle = 'rgba(255,255,255,.32)';
+    ctx.lineWidth = 2;
+    roundRect(ctx, PAD, y, chipW, 64, 32);
+    ctx.stroke();
+    ctx.fillStyle = '#DCE7F5';
+    ctx.fillText(chip, PAD + 26, y + 17);
+    y += 64 + 38;
+
+    /* 阶段一句话 */
+    ctx.font = f(27, 'normal');
+    ctx.fillStyle = '#A9BCD4';
+    var oneLines = wrap(ctx, vm.oneLiner, PADW);
+    for (var i = 0; i < oneLines.length; i++) ctx.fillText(oneLines[i], PAD, y + i * 46);
+
+    /* ---------- 正文区 ---------- */
+    y = hH + 64;
+
+    /* 四大维度诊断 */
+    y += text(ctx, '四大维度诊断', PAD, y, { size: 30, weight: '700', color: C_TEXT, lh: 40 });
+    y += 34;
+
+    for (i = 0; i < vm.dimensions.length; i++) {
+      var d = vm.dimensions[i];
+      text(ctx, d.name, PAD, y, { size: 27, weight: '600', color: C_TEXT, lh: 34 });
+      text(ctx, d.pct + ' / 100', PAD, y - 3, {
+        size: 27, weight: '700', color: C_BLUE, lh: 34, align: 'right'
+      });
+
+      var barY = y + 44;
+      roundRect(ctx, PAD, barY, PADW, 12, 6);
+      ctx.fillStyle = '#EDF1F7';
+      ctx.fill();
+
+      var fw = PADW * Math.max(0, Math.min(100, d.pct)) / 100;
+      if (fw > 0) {
+        roundRect(ctx, PAD, barY, Math.max(fw, 12), 12, 6);
+        ctx.fillStyle = C_BLUE;
+        ctx.fill();
+      }
+      y += 92;
+    }
+    y += 22;
+
+    ctx.fillStyle = C_LINE;
+    ctx.fillRect(PAD, y, PADW, 2);
+    y += 48;
+
+    /* 当前诊断 */
+    text(ctx, '当前诊断', PAD, y, { size: 28, weight: '700', color: C_TEXT3, lh: 38 });
+    y += 38 + 18;
+    y += text(ctx, vm.headline, PAD, y, { size: 36, weight: '700', color: C_TEXT, lh: 52 });
+    y += 22;
+
+    for (i = 0; i < vm.blocks.length; i++) {
+      var b = vm.blocks[i];
+      y += text(ctx, b.text, PAD, y, {
+        size: 27, lh: 46,
+        color: b.type === 'lead' ? C_TEXT : C_TEXT2,
+        weight: b.type === 'lead' ? '600' : 'normal'
+      });
+      y += 6;
+    }
+    y += 26;
+
+    /* 核心建议卡 */
+    var sText = vm.suggestion.text || ((vm.suggestion.items || []).join('　·　'));
+    ctx.font = f(27, 'normal');
+    var sLines = wrap(ctx, sText, PADW - 68);
+    var sH = 34 + 34 + 14 + sLines.length * 46 + 34;
+
+    roundRect(ctx, PAD, y, PADW, sH, 20);
+    ctx.fillStyle = C_SOFT;
+    ctx.fill();
+
+    text(ctx, vm.suggestion.title || '核心建议', PAD + 34, y + 30, {
+      size: 24, weight: '700', color: C_BLUE, lh: 32
+    });
+    text(ctx, sText, PAD + 34, y + 82, {
+      size: 27, weight: '600', color: C_TEXT, lh: 46, maxWidth: PADW - 68
+    });
+    y += sH + 22;
+
+    /* 薄弱维度卡 */
+    var wText = vm.weakest.name + '：' + vm.weakAdvice;
+    ctx.font = f(27, 'normal');
+    var wLines = wrap(ctx, wText, PADW - 68);
+    var wH = 34 + 32 + 14 + wLines.length * 46 + 34;
+
+    roundRect(ctx, PAD, y, PADW, wH, 20);
+    ctx.fillStyle = C_AMBERBG;
+    ctx.fill();
+
+    text(ctx, '最值得突破的维度', PAD + 34, y + 30, {
+      size: 24, weight: '700', color: C_AMBER, lh: 32
+    });
+    text(ctx, wText, PAD + 34, y + 80, {
+      size: 27, color: C_AMBERTX, lh: 46, maxWidth: PADW - 68
+    });
+    y += wH + 44;
+
+    /* 页脚 */
+    ctx.fillStyle = C_LINE;
+    ctx.fillRect(PAD, y, PADW, 2);
+    y += 30;
+
+    y += text(ctx, fmtDate(vm.generatedAt) + '　生成', PAD, y, {
+      size: 22, color: C_TEXT3, lh: 32
+    });
+    y += 8;
+    text(ctx, window.AI_CONFIG.meta.footerNote, PAD, y, {
+      size: 20, color: '#A8B3C2', lh: 32
+    });
+    y += 64;
+
+    return y;
+  }
+
+  /** 对外：生成 PNG dataURL */
+  function render(vm) {
+    /* 第 1 遍：探针量高 */
+    var probe = document.createElement('canvas');
+    probe.width = W;
+    probe.height = 4000;
+    var pctx = probe.getContext('2d');
+    pctx.font = f(26, 'normal');
+    var height = Math.ceil(paint(pctx, vm));
+
+    /* 第 2 遍：正式绘制 */
+    var c = document.createElement('canvas');
+    c.width = W * SCALE;
+    c.height = height * SCALE;
+    var ctx = c.getContext('2d');
+    ctx.scale(SCALE, SCALE);
+
+    /* 白底 */
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillRect(0, 0, W, height);
+
+    paint(ctx, vm);
+    return c.toDataURL('image/png');
+  }
+
+  return { render: render };
+})();
+
+</script>
+<script>
+/*!
+ * app.js —— 交互与渲染层
+ * ---------------------------------------------------------------
+ * 只负责「把状态渲染成界面」和「把点击变成状态变化」。
+ * 分数怎么算 → scoring.js
+ * 文案是什么 → config.js
+ * 数据存哪里 → storage.js
+ * 报告长什么样 → report.js
+ * ---------------------------------------------------------------
+ */
+(function () {
+  'use strict';
+
+  var C = window.AI_CONFIG;
+  var S = window.AI_SCORING;
+  var R = window.AI_REPORT;
+  var STORE = window.AI_STORE;
+
+  var SS_KEY = 'ai_maturity_session_v1';
+  var TOTAL_Q = C.questions.length;
+
+  var screen = document.getElementById('screen');
+  var topbar = document.getElementById('topbar');
+  var loading = document.getElementById('loading');
+  var sheet = document.getElementById('sheet');
+  var toastEl = document.getElementById('toast');
+
+  var lastVM = null;      // 最近一次报告视图模型（长图用）
+  var advTimer = null;
+
+  /* ==========================================================
+   * 状态
+   * ========================================================== */
+  function blankState() {
+    return {
+      profile: { identity: '', industry: '', scale: '' },
+      answers: {},
+      needs: [],
+      startedAt: 0,
+      finishedAt: 0,
+      saved: false
+    };
+  }
+
+  var state = loadSession() || blankState();
+
+  function loadSession() {
+    try {
+      var raw = sessionStorage.getItem(SS_KEY);
+      if (!raw) return null;
+      var s = JSON.parse(raw);
+      if (!s || typeof s !== 'object') return null;
+      s.profile = s.profile || { identity: '', industry: '', scale: '' };
+      s.answers = s.answers || {};
+      s.needs = s.needs || [];
+      return s;
+    } catch (e) { return null; }
+  }
+
+  function saveSession() {
+    try { sessionStorage.setItem(SS_KEY, JSON.stringify(state)); } catch (e) { /* 忽略 */ }
+  }
+
+  function resetAll() {
+    state = blankState();
+    lastVM = null;
+    try { sessionStorage.removeItem(SS_KEY); } catch (e) { /* 忽略 */ }
+  }
+
+  /* ==========================================================
+   * 小工具
+   * ========================================================== */
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function go(hash, replace) {
+    if (replace) {
+      window.location.replace(window.location.pathname + window.location.search + hash);
+    } else {
+      window.location.hash = hash;
+    }
+  }
+
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function () { toastEl.classList.remove('show'); }, 2000);
+  }
+
+  function profileDone() {
+    return !!(state.profile.identity && state.profile.industry && state.profile.scale);
+  }
+
+  function answersDone() {
+    return C.questions.every(function (q) { return !!state.answers[q.id]; });
+  }
+
+  function answeredCount() {
+    return C.questions.filter(function (q) { return !!state.answers[q.id]; }).length;
+  }
+
+  function topbarShow(opt) {
+    topbar.classList.add('show');
+    document.getElementById('tb-label').textContent = opt.label || '';
+    document.getElementById('tb-count').innerHTML = opt.count || '';
+    document.getElementById('tb-bar').style.width = (opt.progress || 0) + '%';
+    document.getElementById('tb-back').disabled = !!opt.noBack;
+  }
+
+  function topbarHide() { topbar.classList.remove('show'); }
+
+  function scrollTop() { window.scrollTo(0, 0); }
+
+  /* ==========================================================
+   * 首页
+   * ========================================================== */
+  function renderHome() {
+    topbarHide();
+
+    var dimList = C.dimensions.map(function (d) {
+      return '<li>' + esc(d.name) + '（' + d.weight + '分）—— ' + esc(d.desc) + '</li>';
+    }).join('');
+
+    var chain = ['工具使用', '场景应用', '流程重构', '组织协同']
+      .map(function (t) { return '<div class="chain-item">' + t + '</div>'; })
+      .join('<div class="chain-arrow">▶</div>');
+
+    screen.innerHTML =
+      '<div class="hero fade-in">' +
+        '<p class="hero-kicker">Enterprise AI Maturity</p>' +
+        '<h1>' + esc(C.meta.title) + '</h1>' +
+        '<p class="hero-sub">' + esc(C.meta.subtitle) + '</p>' +
+        '<div class="hero-tags">' +
+          '<span>3分钟</span><span>12道题</span><span>4大维度</span><span>满分100分</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="screen-body fade-in">' +
+        '<div class="sec">' +
+          '<p class="prose">员工开始用AI写文案、做图片、分析数据，公司也买了不少AI工具、做了不少培训。</p>' +
+          '<p class="prose">但<strong>员工会用AI，不等于企业完成了AI转型。</strong></p>' +
+          '<p class="prose">真正的企业AI落地，需要经历：</p>' +
+          '<div class="chain">' + chain + '</div>' +
+        '</div>' +
+        '<div class="sec">' +
+          '<p class="prose">这份测评将从4个维度，对企业当前的AI落地成熟度进行诊断。</p>' +
+          '<ul class="list-check">' + dimList + '</ul>' +
+        '</div>' +
+        '<div class="sec">' +
+          '<h2 class="sec-title">完成后你将获得</h2>' +
+          '<div class="card">' +
+            '<ul class="list-check">' +
+              '<li>AI落地成熟度总评分（满分100）</li>' +
+              '<li>当前所处阶段（L1-L4）</li>' +
+              '<li>四大维度逐项分析</li>' +
+              '<li>核心问题诊断</li>' +
+              '<li>下一阶段行动建议</li>' +
+            '</ul>' +
+          '</div>' +
+        '</div>' +
+        '<div class="sec">' +
+          '<h2 class="sec-title">适合人群</h2>' +
+          '<div class="chips">' +
+            ['企业创始人 / 老板', '企业高管', '业务负责人', '数字化 / AI负责人', 'AI转型推动者']
+              .map(function (t) { return '<span class="chip">' + t + '</span>'; }).join('') +
+          '</div>' +
+        '</div>' +
+        '<p class="fine-print">全程约3分钟，不需要准备任何材料。' +
+          '测评结果用于诊断参考，不涉及企业敏感信息。</p>' +
+      '</div>' +
+      '<div class="dock">' +
+        '<button class="btn btn-primary" data-act="start">开始测评</button>' +
+      '</div>';
+  }
+
+  /* ==========================================================
+   * 基础信息
+   * ========================================================== */
+  function renderProfile() {
+    topbarShow({ label: '填写基础信息', count: '', progress: 0 });
+
+    /* 直接落到本页（刷新 / 分享链接）时也要开始计时，
+       否则最终记录里的作答时长会是空的 */
+    if (!state.startedAt) { state.startedAt = Date.now(); saveSession(); }
+
+    var fields = C.profileQuestions.map(function (f) {
+      var pills = f.options.map(function (o) {
+        var sel = state.profile[f.id] === o ? ' sel' : '';
+        return '<button class="pill' + sel + '" data-act="profile-pick" ' +
+          'data-field="' + f.id + '" data-value="' + esc(o) + '">' + esc(o) + '</button>';
+      }).join('');
+      return '<div class="field">' +
+        '<p class="field-label">' + esc(f.label) + '<span>单选</span></p>' +
+        '<div class="pills">' + pills + '</div>' +
+      '</div>';
+    }).join('');
+
+    var ready = profileDone();
+
+    screen.innerHTML =
+      '<div class="screen-body fade-in">' +
+        '<p class="q-index">基本信息</p>' +
+        '<h1 class="q-title">先简单了解一下你的企业</h1>' +
+        fields +
+        '<p class="q-hint">以上信息不参与评分，仅用于让诊断结果更贴合你的实际情况。</p>' +
+      '</div>' +
+      '<div class="dock">' +
+        '<button class="btn btn-primary" data-act="profile-next"' +
+          (ready ? '' : ' disabled') + '>开始测评</button>' +
+      '</div>';
+  }
+
+  /* ==========================================================
+   * 答题
+   * ========================================================== */
+  function renderQuiz(n) {
+    var q = C.questions[n - 1];
+    var dim = C.dimensions.filter(function (d) { return d.id === q.dim; })[0];
+    var cur = state.answers[q.id];
+
+    topbarShow({
+      label: dim ? dim.name : '',
+      count: n + ' <em>/ ' + TOTAL_Q + '</em>',
+      progress: Math.round(n / TOTAL_Q * 100)
+    });
+
+    var opts = q.options.map(function (o) {
+      var sel = cur === o.key ? ' sel' : '';
+      return '<button class="opt' + sel + '" data-act="pick" data-q="' + q.id + '" ' +
+        'data-key="' + o.key + '">' +
+        '<span class="opt-k">' + o.key + '</span>' +
+        '<span class="opt-t">' + esc(o.text) + '</span>' +
+      '</button>';
+    }).join('');
+
+    screen.innerHTML =
+      '<div class="screen-body fade-in">' +
+        '<p class="q-index">Q' + n + '　' + esc(dim ? dim.name : '') + '</p>' +
+        '<h1 class="q-title">' + esc(q.title) + '</h1>' +
+        '<div class="opts">' + opts + '</div>' +
+        '<p class="q-hint">选择后自动进入下一题，可随时返回修改。</p>' +
+      '</div>';
+
+    scrollTop();
+  }
+
+  /* ==========================================================
+   * 需求题
+   * ========================================================== */
+  function renderNeeds() {
+    topbarShow({ label: '补充问题 · 不计分', count: '12 <em>/ 12</em>', progress: 100 });
+
+    var pills = C.needsQuestion.options.map(function (o) {
+      var sel = state.needs.indexOf(o) > -1 ? ' sel' : '';
+      return '<button class="pill' + sel + '" data-act="need" data-value="' + esc(o) + '">' +
+        esc(o) + '</button>';
+    }).join('');
+
+    var ready = state.needs.length > 0;
+
+    screen.innerHTML =
+      '<div class="screen-body fade-in">' +
+        '<p class="q-index">最后一步　不计入评分</p>' +
+        '<h1 class="q-title">' + esc(C.needsQuestion.title) + '</h1>' +
+        '<p class="q-hint" style="margin:-16px 0 20px">' + esc(C.needsQuestion.hint) + '</p>' +
+        '<div class="pills">' + pills + '</div>' +
+      '</div>' +
+      '<div class="dock">' +
+        '<button class="btn btn-primary" data-act="generate"' +
+          (ready ? '' : ' disabled') + '>生成诊断报告</button>' +
+      '</div>';
+
+    scrollTop();
+  }
+
+  /* ==========================================================
+   * 生成过渡
+   * ========================================================== */
+  function generate() {
+    if (!answersDone()) {
+      showToast('还有题目没有完成');
+      return;
+    }
+    if (!state.needs.length) {
+      showToast('请至少选择一项');
+      return;
+    }
+
+    loading.classList.add('show');
+    var steps = [
+      '正在生成你的企业AI诊断报告……',
+      '正在计算四大维度得分……',
+      '正在匹配当前所处阶段……'
+    ];
+    var el = loading.querySelector('.loading-t');
+    el.textContent = steps[0];
+    el.classList.add('loading-dots');
+
+    var i = 0;
+    var timer = setInterval(function () {
+      i++;
+      if (i < steps.length) el.textContent = steps[i];
+    }, 400);
+
+    setTimeout(function () {
+      clearInterval(timer);
+      loading.classList.remove('show');
+
+      state.finishedAt = Date.now();
+      var res = S.compute(state.answers);
+
+      // 只上报一次
+      if (!state.saved) {
+        try { STORE.save(state, res); } catch (e) { console.warn(e); }
+        state.saved = true;
+      }
+      saveSession();
+
+      lastVM = R.buildResult(state, res);
+      go('#/result', true);
+      renderResult();
+    }, 1150);
+  }
+
+  /* ==========================================================
+   * 结果页
+   * ========================================================== */
+  function renderResult() {
+    topbarHide();
+
+    var res = S.compute(state.answers);
+    var vm = R.buildResult(state, res);
+    lastVM = vm;
+
+    var stage = vm.stage;
+
+    /* ---- 维度条 ---- */
+    var dimRows = vm.dimensions.map(function (d) {
+      var tag = '';
+      if (vm.gap > 5) {
+        if (d.id === vm.strongest.id) tag = '<span class="dim-tag best">相对优势</span>';
+        else if (d.id === vm.weakest.id) tag = '<span class="dim-tag weak">待突破</span>';
+      }
+      return '<div class="dim-row">' +
+        '<div class="dim-head">' +
+          '<span class="dim-name">' + esc(d.name) + tag + '</span>' +
+          '<span class="dim-val">' + d.pct + '<em> / 100</em></span>' +
+        '</div>' +
+        '<div class="dim-track"><i class="dim-fill" data-w="' + d.pct + '" ' +
+          'style="width:0"></i></div>' +
+        '<p class="dim-desc">' + esc(d.desc) + '</p>' +
+      '</div>';
+    }).join('');
+
+    /* ---- 诊断段落 ---- */
+    var blocks = vm.blocks.map(function (b) {
+      return '<p class="diag-p' + (b.type === 'lead' ? ' lead' : '') + '">' +
+        esc(b.text) + '</p>';
+    }).join('');
+
+    /* ---- 核心建议 ---- */
+    var sugExtra = (vm.suggestion.items && vm.suggestion.items.length)
+      ? (vm.suggestion.itemsLabel
+          ? '<p class="diag-p lead" style="margin:16px 0 10px">' +
+            esc(vm.suggestion.itemsLabel) + '</p>'
+          : '<div style="height:14px"></div>') +
+        '<div class="chips">' +
+          vm.suggestion.items.map(function (t) {
+            return '<span class="chip">' + esc(t) + '</span>';
+          }).join('') + '</div>'
+      : '';
+
+    /* ---- 建议路径 ---- */
+    var pathHTML = vm.path && vm.path.steps && vm.path.steps.length
+      ? '<h3 class="sec-title" style="margin-top:24px">' + esc(vm.path.title) + '</h3>' +
+        '<ol class="path">' + vm.path.steps.map(function (s) {
+          return '<li>' + esc(s) + '</li>';
+        }).join('') + '</ol>'
+      : '';
+
+    /* ---- 需求题个性化建议 ---- */
+    var needsHTML = '';
+    if (vm.needsAdvice.length) {
+      needsHTML =
+        '<div class="sec">' +
+          '<h2 class="sec-title">针对你的关注点</h2>' +
+          '<div class="card">' +
+            vm.needsAdvice.map(function (n) {
+              return '<div class="need-item">' +
+                '<div class="need-title">' + esc(n.need) + '</div>' +
+                '<div class="need-text">' + esc(n.advice) + '</div>' +
+              '</div>';
+            }).join('') +
+          '</div>' +
+        '</div>';
+    }
+
+    /* ---- 样本对标（无真实数据时自动隐藏） ---- */
+    var benchHTML = '';
+    if (vm.percentile != null) {
+      benchHTML = '<div class="sh-benchmark">已超过当前测评样本中的 <b>' +
+        vm.percentile + '%</b> 企业</div>';
+    }
+
+    /* ---- 引导模块 ---- */
+    var g = vm.guide;
+    var guideHTML =
+      '<div class="sec">' +
+        '<div class="guide">' +
+          '<div class="guide-top">' +
+            '<span class="guide-tag">' + esc(stage.level) + ' 阶段建议</span>' +
+            '<h2 class="guide-title">' + esc(g.title) + '</h2>' +
+          '</div>' +
+          '<div class="guide-body">' +
+            g.body.map(function (p) { return '<p>' + esc(p) + '</p>'; }).join('') +
+            (g.bullets.length
+              ? '<ul class="guide-bullets">' + g.bullets.map(function (b) {
+                  return '<li>' + esc(b) + '</li>';
+                }).join('') + '</ul>'
+              : '') +
+          '</div>' +
+          '<div class="guide-actions">' +
+            '<button class="btn btn-primary btn-sm" data-act="cta" ' +
+              'data-url="' + esc(g.ctaUrl) + '" data-kind="tour">' + esc(g.ctaLabel) + '</button>' +
+            '<button class="btn btn-outline btn-sm" data-act="cta" ' +
+              'data-url="' + esc(g.leadUrl) + '" data-kind="lead">' + esc(g.leadLabel) + '</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    screen.innerHTML =
+      /* ---- 第一屏 ---- */
+      '<div class="score-hero fade-in">' +
+        '<p class="sh-label">您的企业AI落地成熟度</p>' +
+        '<div class="sh-score">' +
+          '<span class="sh-num">' + vm.total + '</span>' +
+          '<span class="sh-max">/ 100</span>' +
+        '</div>' +
+        '<div class="sh-level"><b>' + esc(stage.level) + '</b><s>|</s>' + esc(stage.name) + '</div>' +
+        '<p class="sh-oneliner">' + esc(vm.oneLiner) + '</p>' +
+        benchHTML +
+      '</div>' +
+
+      '<div class="screen-body fade-in">' +
+
+        /* ---- 四大维度 ---- */
+        '<div class="sec">' +
+          '<h2 class="sec-title">四大维度诊断</h2>' +
+          '<div class="card">' + dimRows + '</div>' +
+          '<div class="callout" style="margin-top:12px">' + esc(vm.dimDiagnosis) + '</div>' +
+        '</div>' +
+
+        /* ---- 当前诊断 ---- */
+        '<div class="sec">' +
+          '<h2 class="sec-title">当前诊断</h2>' +
+          '<div class="card">' +
+            '<h3 class="diag-headline">' + esc(vm.headline) + '</h3>' +
+            blocks +
+          '</div>' +
+        '</div>' +
+
+        /* ---- 核心建议 ---- */
+        '<div class="sec">' +
+          '<h2 class="sec-title">' + esc(vm.suggestion.title || '核心建议') + '</h2>' +
+          '<div class="card">' +
+            (vm.suggestion.text
+              ? '<p class="diag-p lead" style="margin:0">' + esc(vm.suggestion.text) + '</p>'
+              : '') +
+            sugExtra +
+            pathHTML +
+          '</div>' +
+        '</div>' +
+
+        /* ---- 待突破维度 ---- */
+        '<div class="sec">' +
+          '<h2 class="sec-title">最值得突破的维度</h2>' +
+          '<div class="callout callout-amber">' +
+            '<b>' + esc(vm.weakest.name) + '</b>（' + vm.weakest.pct + '/100）<br>' +
+            esc(vm.weakAdvice) +
+          '</div>' +
+        '</div>' +
+
+        needsHTML +
+        guideHTML +
+
+        /* ---- 操作 ---- */
+        '<div class="result-actions">' +
+          '<button class="btn btn-outline" data-act="poster">生成结果长图</button>' +
+          '<button class="btn btn-ghost" data-act="restart">重新测评</button>' +
+        '</div>' +
+
+        '<p class="fine-print">' + esc(C.meta.footerNote) + '<br>' +
+          '生成时间：' + fmtNow() + '　版本 v' + esc(C.meta.version) + '</p>' +
+      '</div>';
+
+    /* 维度条动画：进场后从 0 撑开 */
+    scrollTop();
+    requestAnimationFrame(function () {
+      setTimeout(function () {
+        var fills = screen.querySelectorAll('.dim-fill');
+        for (var i = 0; i < fills.length; i++) {
+          (function (el) { el.style.width = el.getAttribute('data-w') + '%'; })(fills[i]);
+        }
+      }, 60);
+    });
+  }
+
+  function fmtNow() {
+    var d = new Date();
+    var p = function (n) { return (n < 10 ? '0' : '') + n; };
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) +
+      ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+
+  /* ==========================================================
+   * 长图
+   * ========================================================== */
+  /* 弹层里有两套内容：长图 / 联系方式，切换时用这里恢复 */
+  var sheetScroll = document.querySelector('.sheet-scroll');
+  var POSTER_HTML = sheetScroll.innerHTML;
+
+  function openPoster() {
+    if (!lastVM) return;
+    showToast('正在生成长图…');
+    setTimeout(function () {
+      try {
+        /* 先把长图的 DOM 结构恢复回来（可能被联系方式弹层覆盖过） */
+        sheetScroll.innerHTML = POSTER_HTML;
+
+        var url = window.AI_POSTER.render(lastVM);
+        var img = document.getElementById('sheet-img');
+        img.src = url;
+        document.getElementById('sheet-title').textContent = '企业AI落地成熟度诊断报告';
+        document.getElementById('sheet-download').onclick = function () {
+          var a = document.createElement('a');
+          a.href = url;
+          a.download = '企业AI落地成熟度诊断报告_' + lastVM.total + '分.png';
+          document.body.appendChild(a); a.click(); document.body.removeChild(a);
+          showToast('已保存到相册或下载目录');
+        };
+        document.getElementById('sheet-copy').onclick = function () {
+          copyText(R.toPlainText(lastVM), '已复制文字版结果');
+        };
+        sheet.classList.add('show');
+      } catch (e) {
+        console.warn(e);
+        showToast('长图生成失败，请重试');
+      }
+    }, 60);
+  }
+
+  function copyText(text, tip) {
+    var msg = tip || '已复制';
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        showToast(msg);
+      }, function () { fallbackCopy(text, msg); });
+    } else {
+      fallbackCopy(text, msg);
+    }
+  }
+
+  function fallbackCopy(text, msg) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;top:-1000px;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); showToast(msg || '已复制'); }
+    catch (e) { showToast('复制失败，请长按文字手动选择'); }
+    document.body.removeChild(ta);
+  }
+
+  function closeSheet() { sheet.classList.remove('show'); }
+
+  /* ==========================================================
+   * 引导按钮
+   * ========================================================== */
+  /* 联系方式是否已配置完成？
+   * 二维码 或 真实微信号，只要有一个就算配好。
+   * 注意：config.js 里默认填的是占位文字，那种情况不算「已配置」。 */
+  function contactReady() {
+    var ct = C.guide.contact || {};
+    var hasQr = !!(ct.qrcode && String(ct.qrcode).trim());
+    var wx = String(ct.wechat || '').trim();
+    var isPlaceholder = !wx ||
+      wx.indexOf('config.js') > -1 || wx.indexOf('填入你的微信号') > -1;
+    return hasQr || !isPlaceholder;
+  }
+
+  function handleCta(url, kind) {
+    // 记录「点击了哪个引导按钮」——这是最有价值的意向线索
+    try {
+      window.AI_STORE.trackEvent('cta_click', {
+        cta: kind,                                  // tour / lead
+        total: lastVM ? lastVM.total : null,
+        stage: lastVM ? lastVM.stage.level : null,
+        weakestDim: lastVM && lastVM.weakest ? lastVM.weakest.name : '',
+        needs: lastVM ? (lastVM.needs || []).join('、') : ''
+      });
+    } catch (e) { /* 埋点失败不影响主流程 */ }
+
+    // 配了链接就直接跳转（活动报名页 / 公众号文章 / 表单）
+    if (url) { window.location.href = url; return; }
+
+    var ct = C.guide.contact;
+    var title = ct.title || (kind === 'tour' ? '企业AI游学' : '完整诊断建议');
+
+    /* 还没配置联系方式：给访客一句得体的话，
+       绝不把「请在 config.js 里填写…」这种开发说明暴露出去 */
+    if (!contactReady()) {
+      openSheet({
+        title: title,
+        html: '<p class="wx-note" style="margin-top:2px">' +
+                '联系方式正在完善中，稍后即可添加。你可以先把这份诊断结果保存下来。' +
+              '</p>',
+        plain: true
+      });
+      return;
+    }
+
+    var hasQr = !!(ct.qrcode && String(ct.qrcode).trim());
+
+    var html = '';
+
+    /* ---- 二维码（主路径） ---- */
+    if (hasQr) {
+      html +=
+        '<div class="qr-box">' +
+          '<img class="qr-img" src="' + esc(ct.qrcode) + '" alt="微信二维码"' +
+            ' onerror="var b=this.closest(\'.qr-box\');if(b)b.style.display=\'none\';">' +
+        '</div>' +
+        '<p class="qr-tip">' + esc(ct.qrcodeTip || '') + '</p>';
+    }
+
+    /* ---- 微信号（扫码不便时的兜底） ---- */
+    html +=
+      '<div class="wx-row' + (hasQr ? ' wx-row-sub' : '') + '">' +
+        '<span class="wx-label">微信号</span>' +
+        '<code class="wx-code">' + esc(ct.wechat) + '</code>' +
+        '<button class="wx-copy" type="button" data-act="copy-wechat">复制</button>' +
+      '</div>';
+
+    /* ---- 备注说明 ---- */
+    if (ct.note) {
+      html += '<p class="wx-note">' + esc(ct.note) + '</p>';
+    }
+
+    /* ---- 打招呼语一键复制 ---- */
+    if (ct.greeting) {
+      html +=
+        '<button class="btn btn-outline btn-sm wx-greet" type="button" data-act="copy-greeting">' +
+          '复制打招呼语' +
+        '</button>' +
+        '<p class="wx-greet-tip">复制后直接发给顾问，省得想怎么开口</p>';
+    }
+
+    openSheet({ title: title, html: html, plain: true });
+  }
+
+  function openSheet(opt) {
+    sheetScroll.innerHTML = opt.html;
+    document.getElementById('sheet-title').textContent = opt.title || '';
+    sheet.classList.add('show');
+  }
+
+  /* ==========================================================
+   * 事件总线（全部走事件委托）
+   * ========================================================== */
+  document.addEventListener('click', function (ev) {
+    var el = ev.target.closest ? ev.target.closest('[data-act]') : null;
+
+    if (!el) {
+      if (ev.target.id === 'sheet-mask' || ev.target.id === 'sheet-close') closeSheet();
+      return;
+    }
+
+    var act = el.getAttribute('data-act');
+
+    switch (act) {
+
+      /* 返回上一步：用确定性的层级跳转，而不是 history.back()。
+         这样即使用户从分享链接直接进入，也不会被带出站外。 */
+      case 'back': {
+        var h = window.location.hash || '#/';
+        var m = h.match(/^#\/q\/(\d+)$/);
+        if (m) {
+          var n = parseInt(m[1], 10);
+          go(n > 1 ? '#/q/' + (n - 1) : '#/profile');
+        } else if (h === '#/profile') {
+          go('#/');
+        } else if (h === '#/needs') {
+          go('#/q/' + TOTAL_Q);
+        } else {
+          go('#/');
+        }
+        break;
+      }
+
+      case 'start':
+        if (!state.startedAt) { state.startedAt = Date.now(); saveSession(); }
+        go('#/profile');
+        break;
+
+      case 'profile-pick': {
+        var f = el.getAttribute('data-field');
+        state.profile[f] = el.getAttribute('data-value');
+        saveSession();
+        renderProfile();
+        break;
+      }
+
+      case 'profile-next':
+        if (!profileDone()) { showToast('请先完成3项基本信息'); return; }
+        go('#/q/1');
+        break;
+
+      case 'pick': {
+        var qid = el.getAttribute('data-q');
+        var key = el.getAttribute('data-key');
+        state.answers[qid] = key;
+        saveSession();
+        renderQuiz(parseInt(qid.replace('Q', ''), 10));
+
+        /* 自动进入下一题（留 300ms 让用户看到自己的选择被确认） */
+        clearTimeout(advTimer);
+        advTimer = setTimeout(function () {
+          var n = parseInt(qid.replace('Q', ''), 10);
+          if (n < TOTAL_Q) go('#/q/' + (n + 1));
+          else go('#/needs');
+        }, 300);
+        break;
+      }
+
+      case 'need': {
+        var v = el.getAttribute('data-value');
+        var i = state.needs.indexOf(v);
+        if (i > -1) state.needs.splice(i, 1); else state.needs.push(v);
+        saveSession();
+        renderNeeds();
+        break;
+      }
+
+      case 'generate':
+        generate();
+        break;
+
+      case 'poster':
+        openPoster();
+        break;
+
+      case 'restart':
+        resetAll();
+        go('#/', true);
+        renderHome();
+        showToast('已重置，可以重新测评');
+        break;
+
+      case 'cta':
+        handleCta(el.getAttribute('data-url'), el.getAttribute('data-kind'));
+        break;
+
+      case 'copy-wechat':
+        copyText(C.guide.contact.wechat, '已复制微信号');
+        break;
+
+      case 'copy-greeting':
+        copyText(C.guide.contact.greeting || '', '已复制，粘贴发给顾问即可');
+        break;
+    }
+  });
+
+  /* ==========================================================
+   * 路由
+   * ========================================================== */
+  function route() {
+    var h = window.location.hash || '#/';
+
+    if (h === '#/' || h === '' || h === '#') { renderHome(); return; }
+
+    if (h === '#/profile') { renderProfile(); return; }
+
+    var m = h.match(/^#\/q\/(\d+)$/);
+    if (m) {
+      if (!profileDone()) { go('#/profile', true); return; }
+      var n = parseInt(m[1], 10);
+      if (!(n >= 1 && n <= TOTAL_Q)) { go('#/q/1', true); return; }
+      renderQuiz(n);
+      return;
+    }
+
+    if (h === '#/needs') {
+      if (!answeredDone()) {
+        var first = C.questions.filter(function (q) { return !state.answers[q.id]; })[0];
+        var num = first ? (parseInt(first.id.replace('Q', ''), 10)) : 1;
+        go('#/q/' + num, true);
+        return;
+      }
+      renderNeeds();
+      return;
+    }
+
+    if (h === '#/result') {
+      if (!answersDone() || !state.needs.length) { go('#/', true); return; }
+      renderResult();
+      return;
+    }
+
+    renderHome();
+  }
+
+  function answeredDone() { return answersDone(); }
+
+  window.addEventListener('hashchange', route);
+
+  /* 刷新时如果 loading 卡着，先收掉 */
+  loading.classList.remove('show');
+
+  /* 交付自检：联系方式没配好时，只在控制台提醒（访客看不到） */
+  if (!contactReady()) {
+    console.warn(
+      '[AI测评] 还没配置联系方式 —— 访客点「了解企业AI游学」时暂时加不上微信。\n' +
+      '  请打开 assets/js/config.js，找到 guide.contact，填这两行：\n' +
+      "    wechat: '你的微信号'                     // 必填\n" +
+      "    qrcode: 'assets/img/wechat-qr.png'      // 选填，把二维码图放进 assets/img/\n" +
+      '  改完执行：node tools/build.js  （生成 dist/ 后再部署）'
+    );
+  }
+
+  route();
+
+  /* 方便排查：控制台可查看当前状态 */
+  window.__AI_STATE = state;
+})();
+
+</script>
+
+</body>
+</html>
